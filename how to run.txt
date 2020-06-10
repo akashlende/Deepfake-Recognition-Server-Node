@@ -1,0 +1,17 @@
+Step 1: 
+	run 'npm install'
+	If you have yarn run 'yarn'
+
+Step 2:
+	Create and environment variable in your shell called TWITTER_AUTH and give it the value of the Twitter API Token
+	The reason being we don't want our API keys exposed
+
+Step 3:
+	Run node index.js
+
+Step 4:
+	Execute this curl request in a bash terminal
+	
+curl --location --request POST 'http://localhost:3000/api/search' --header 'Content-Type: application/json' --data-raw '{ "query": "@theSentinels_20", "maxResults": "100"}'
+
+You can change the model path and try different models in getFrames.js 

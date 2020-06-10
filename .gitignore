@@ -1,1 +1,4 @@
 /node_modules
+/input/*
+/model/*
+result.mp4
