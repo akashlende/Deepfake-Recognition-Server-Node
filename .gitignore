@@ -1,4 +1,6 @@
 /node_modules
 /input/*
 /model/*
+!/input/.gitkeep
+!/model/.gitkeep
 result.mp4
