@@ -27,6 +27,6 @@ pycparser==2.19
 scandir==1.7
 six==1.12.0
 termcolor==1.1.0
-torch==1.0.1.post2
-torchvision==0.2.1
+torch
+torchvision
 tqdm==4.25.0

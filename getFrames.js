@@ -1,6 +1,7 @@
 const axios = require("axios").default;
 const { execSync } = require("child_process");
 const fs = require("fs");
+const auth = require("./requests/auth.json");
 
 const pythonExec = "python";
 const latestIndex = 0;
@@ -11,7 +12,8 @@ function getFrames(req, res) {
 		url: "https://api.twitter.com/1.1/tweets/search/30day/dev.json",
 		data: req.body.toString(),
 		headers: {
-			Authorization: `Bearer ${process.env.TWITTER_AUTH}`,
+			// TODO: Get token from ./requests/auth.json
+			Authorization: `Bearer ${auth.oauth2token}`,
 			"Content-Type": "application/json",
 			Cookie:
 				'personalization_id="v1_CjtCqPT5t1ckgO8TylZOtg=="; guest_id=v1%3A159158560925302598',
@@ -40,14 +42,15 @@ function getFrames(req, res) {
 
 		const latestVideo = videoList[latestIndex];
 		console.log(`User: ${users[latestIndex].screen_name}\nURL: ${latestVideo}`);
-		execSync(
-			`${pythonExec} -W ignore predict.py -m model\\full_c40.p -i ${latestVideo} --cuda`
-		);
+		// execSync(
+		// 	`${pythonExec} -W ignore predict.py -m model\\full_c40.p -i ${latestVideo} --cuda`
+		// );
 		const resultFile = fs.readFileSync("frames.json");
 		const data = JSON.parse(resultFile.toString());
 		res.send(makeResponse(data, users));
 	});
 	request.catch((reason) => {
+		console.log("\n\nError\n\n", reason)
 		res.send(reason);
 	});
 }

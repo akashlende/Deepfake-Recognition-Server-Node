@@ -4,3 +4,8 @@
 !/input/.gitkeep
 !/model/.gitkeep
 result.mp4
+/twitter_video/*
+!/twitter_video/sample.mp4
+/twitter_json/*
+!/twitter_json/randomname.json
+/.vscode

@@ -29,9 +29,7 @@ module.exports = {
     getHeader: () => {
         return {
             "Content-Type": "application/json",
-            Authorization: `OAuth oauth_consumer_key=${auth.consumerKey},oauth_token=${auth.oauthToken},oauth_signature_method="HMAC-SHA1",oauth_timestamp="1591518874",oauth_nonce="Uy55DK3Deec",oauth_version="1.0",oauth_signature="WMw7zGM1TTnQP4CKBb8BuL3qmH0%3D"`,
-            Cookie:
-                'personalization_id="v1_VIUj6hiI6FiSRMW4xROMgQ=="; guest_id=v1%3A159091927093030167; lang=en',
+            'Authorization': 'OAuth oauth_consumer_key="ndaviAaGbKW4lu4nW16303acU",oauth_token="1267016760848416769-UrL7a2FKcqf0QSmLmcxhDNaiGvHmTR",oauth_signature_method="HMAC-SHA1",oauth_timestamp="1591903300",oauth_nonce="h5fer8hsoh2",oauth_version="1.0",oauth_signature="BUc5sjLZNJO1E2Hs6jFw3eeIHT4%3D"'
         };
     },
 };

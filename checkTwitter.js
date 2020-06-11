@@ -1,0 +1,67 @@
+const fs = require("fs");
+const URL = require('url').URL;
+const https = require("https")
+const http = require("http")
+const uniqueFilename = require("unique-filename");
+const { execSync } = require("child_process");
+
+const twitter = require("./ServeTwitter");
+
+const pythonExec = "python";
+const timeInMinutes = 0.1;
+
+// setInterval
+(() => {
+    twitter.fetchTweets((link, userId) => {
+        let url = new URL(link)
+
+        const uniqueFileName = /*uniqueFilename("\\twitter-videos", "video") */ "\\twitter-videos\\randomname";
+        file = fs.createWriteStream(__dirname + uniqueFileName + ".mp4");
+        console.log("File created : ", file.path);
+
+        if (url.protocol === "http:")
+            http.get(url, (response) => response.pipe(file))
+        else if (url.protocol === "https:")
+            https.get(url, (response) => response.pipe(file))
+
+        file.on("finish", () => {
+            console.log("Download finished");
+            // execSync(
+            //     `${pythonExec} -W ignore predict.py -m model\\full_c40.p -i ${file.path} --cuda`
+            // );
+            let temp = file.path.split('\\');
+            temp = temp[temp.length - 1]
+            const resultFile = fs.readFileSync(__dirname + "\\twitter-json\\" + temp.split('.')[0] + ".json");
+            const data = JSON.parse(resultFile.toString());
+            const videoResult = parseModelOutput(data)
+
+            twitter.directMessageUser(userId, 45, 100);
+            twitter.commentOnTweet()
+        });
+    });
+})()
+// , timeInMinutes * 60 * 1000);
+
+
+const parseModelOutput = (data) => {
+    const frames = data.frames;
+    const fps = data.fps;
+    let realCount = 0;
+    let fakeCount = 0;
+    frames.forEach((frame) => {
+        if (frame == 0) realCount += 1;
+        else fakeCount += 1;
+    });
+
+    const realPercent = Math.round((realCount / frames.length) * 100);
+    const fakePercent = Math.round((fakeCount / frames.length) * 100);
+    const majority = realCount >= fakeCount ? "REAL" : "FAKE";
+
+    return {
+        frameCount: frames.length,
+        realPercent: realPercent,
+        fakePercent: fakePercent,
+        majority: majority,
+        fps: fps,
+    };
+}
