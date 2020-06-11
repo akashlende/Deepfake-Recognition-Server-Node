@@ -1,12 +1,53 @@
-const request = require("request");
 const process = require("process");
 const execFile = require("child_process").execFile;
-
-const dm = require("./requests/dm");
+const axios = require("axios");
 
 const AUTH_PATH = "./requests/auth.json";
 
 class ServeTwitter {
+    constructor() {
+        console.log("Instance of serveTwitter created.");
+    }
+
+    fetchTweets(callback) {
+        const latestIndex = 0;
+        let videoList = [];
+
+        axios({
+            method: "GET",
+            url: "https://api.twitter.com/1.1/search/tweets.json",
+            params: { "q": "@theSentinels_20", "count": 100 },
+            headers: {
+                Authorization: `Bearer ${require(AUTH_PATH).oauth2token}`,
+            }
+        }).then((value) => {
+            const tweets = value.data.statuses;
+            let users = [];
+            tweets.forEach((tweet) => {
+                users.push(tweet.user);
+                const variants = tweet.extended_entities.media[0].video_info.variants;
+                let brList = [];
+                variants.forEach((variant) => {
+                    if (variant.bitrate == undefined) brList.push(-1);
+                    else brList.push(variant.bitrate);
+                });
+                let j = brList.indexOf(-1);
+                if (j != -1) brList[j] = Math.max(...brList) - 1;
+
+                // Change max to min if you want lower quality video
+                let i = brList.indexOf(Math.max(...brList));
+                videoList.push(variants[i].url);
+            });
+
+            if (callback) callback(videoList[latestIndex], users[latestIndex].id_str);
+
+        }).catch((reason) => {
+            console.log("ERR: " + reason.response.status, reason.response.statusText)
+            // if (callback) callback("http://localhost\\SIH2020\\server\\twitter-videos\\sample.mp4");
+        });
+        // callback("http://localhost\\SIH2020\\server\\twitter-videos\\sample.mp4", "1208458421499920384");
+    }
+
     /**Returns true for successfull DM, else false
      * Parameters:  Recipient Twitter ID,
      *              API Calls remaining for a recipient,
@@ -14,17 +55,31 @@ class ServeTwitter {
      */
     directMessageUser(recipient_id, remaining, limit) {
         // console.log("Direct Messaging User ...");
-        var options = {
-            method: "POST",
-            url: "https://api.twitter.com/1.1/direct_messages/events/new.json",
-            headers: dm.getHeader(),
-            body: JSON.stringify(dm.getBody(recipient_id, remaining, limit)),
-        };
-        request(options, function (error, response) {
-            if (error) return false;
-            else if (response.statusCode === 200) return true;
-            else return false;
-        });
+        execFile(
+            `./requests/dm/dist/${
+            process.platform == "win32"
+                ? "dm.exe"
+                : process.platform == "darwin"
+                    ? "dm_mac"
+                    : "dm"
+            }`,
+            [
+                "--recepient",
+                recipient_id,
+                "--remaining",
+                remaining,
+                "--limit",
+                limit,
+                "--auth",
+                AUTH_PATH,
+            ],
+            (err, stdout, stderr) => {
+                console.log(stderr);
+                if (err) return false;
+                else if (stdout === "200") return true;
+                return false;
+            }
+        );
     }
 
     /**Returns true for successfull comment, else false
@@ -63,15 +118,25 @@ class ServeTwitter {
             ],
             (err, stdout, stderr) => {
                 if (err) return false;
-                else if (stdout === "200") return true;
-                return false;
+                else if (stdout === "200") { console.log("true"); return true }
+                else return false;
             }
         );
     }
 }
-new ServeTwitter().commentOnTweet(
-    "1269199358441877504",
-    0.94,
-    ["00:25", "00:54", "01:23", "02:04", "02:34"],
-    false
-);
+// new ServeTwitter().directMessageUser(
+//     "1208458421499920384",
+//     9,
+//     10
+// );
+
+// new ServeTwitter().commentOnTweet(
+//     "1269199358441877504",
+//     0.45,
+//     ["00:25", "00:54", "01:23", "02:02", "02:34"],
+//     false
+// );
+
+new ServeTwitter().fetchTweets();
+
+module.exports = new ServeTwitter();
