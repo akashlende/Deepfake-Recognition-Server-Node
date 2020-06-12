@@ -8,14 +8,13 @@ const { execSync } = require("child_process");
 const twitter = require("./ServeTwitter");
 
 const pythonExec = "python";
-const timeInMinutes = 0.1;
+const timeInMinutes = 1;
 
-// setInterval
-(() => {
-    twitter.fetchTweets((link, userId) => {
-        let url = new URL(link)
+setInterval(() => {
+    twitter.fetchTweets((tweet) => {
+        let url = new URL(tweet.url)
 
-        const uniqueFileName = /*uniqueFilename("\\twitter-videos", "video") */ "\\twitter-videos\\randomname";
+        const uniqueFileName = uniqueFilename("\\twitter-videos", "video");
         file = fs.createWriteStream(__dirname + uniqueFileName + ".mp4");
         console.log("File created : ", file.path);
 
@@ -26,21 +25,20 @@ const timeInMinutes = 0.1;
 
         file.on("finish", () => {
             console.log("Download finished");
-            // execSync(
-            //     `${pythonExec} -W ignore predict.py -m model\\full_c40.p -i ${file.path} --cuda`
-            // );
+            execSync(
+                `${pythonExec} -W ignore predict.py -m model\\full_c40.p -i ${file.path} --cuda`
+            );
             let temp = file.path.split('\\');
             temp = temp[temp.length - 1]
             const resultFile = fs.readFileSync(__dirname + "\\twitter-json\\" + temp.split('.')[0] + ".json");
             const data = JSON.parse(resultFile.toString());
             const videoResult = parseModelOutput(data)
 
-            twitter.directMessageUser(userId, 45, 100);
-            twitter.commentOnTweet()
+            twitter.directMessageUser(tweet.userId, 45, 100);
+            twitter.commentOnTweet(tweet.tweetId, 0.98, ['00:45'], videoResult.majority == "REAL" ? true : false)
         });
     });
-})()
-// , timeInMinutes * 60 * 1000);
+}, timeInMinutes * 60 * 1000);
 
 
 const parseModelOutput = (data) => {

@@ -1,11 +1,10 @@
-/node_modules
-/input/*
-/model/*
+node_modules/
+input/
+model/
 !/input/.gitkeep
 !/model/.gitkeep
 result.mp4
-/twitter_video/*
-!/twitter_video/sample.mp4
-/twitter_json/*
-!/twitter_json/randomname.json
 /.vscode
+twitter-videos/
+twitter-json/
+

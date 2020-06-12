@@ -1,6 +1,7 @@
 const process = require("process");
 const execFile = require("child_process").execFile;
 const axios = require("axios");
+const { response } = require("express");
 
 const AUTH_PATH = "./requests/auth.json";
 
@@ -9,9 +10,11 @@ class ServeTwitter {
         console.log("Instance of serveTwitter created.");
     }
 
+    /**
+     * 
+     * @param {callback} response - Gives object with userId, tweetId, timestamp, url.
+     */
     fetchTweets(callback) {
-        const latestIndex = 0;
-        let videoList = [];
 
         axios({
             method: "GET",
@@ -22,9 +25,13 @@ class ServeTwitter {
             }
         }).then((value) => {
             const tweets = value.data.statuses;
-            let users = [];
+            let response = []
             tweets.forEach((tweet) => {
-                users.push(tweet.user);
+                let temp = {};
+                temp.timestamp = tweet.created_at;
+                temp.tweetId = tweet.id_str;
+                temp.userId = tweet.user.id_str;
+
                 const variants = tweet.extended_entities.media[0].video_info.variants;
                 let brList = [];
                 variants.forEach((variant) => {
@@ -36,22 +43,23 @@ class ServeTwitter {
 
                 // Change max to min if you want lower quality video
                 let i = brList.indexOf(Math.max(...brList));
-                videoList.push(variants[i].url);
+                temp.url = variants[i].url;
+                response.push(temp)
             });
 
-            if (callback) callback(videoList[latestIndex], users[latestIndex].id_str);
+            if (callback) callback(response[0]);
 
         }).catch((reason) => {
             console.log("ERR: " + reason.response.status, reason.response.statusText)
-            // if (callback) callback("http://localhost\\SIH2020\\server\\twitter-videos\\sample.mp4");
         });
-        // callback("http://localhost\\SIH2020\\server\\twitter-videos\\sample.mp4", "1208458421499920384");
+        // callback({ timestamp: "", tweetId: "1269622971288576001", userId: "1208458421499920384", url: "http://localhost\\SIH2020\\server\\result.mp4" });
     }
 
-    /**Returns true for successfull DM, else false
-     * Parameters:  Recipient Twitter ID,
-     *              API Calls remaining for a recipient,
-     *              Total API Calls allocated to a recipient
+    /**
+     * @param {string} recipient_id - Twitter ID
+     * @param {Number} remaining - API Calls remaining for a recipient,
+     * @param {Number} limit - Total API Calls allocated to a recipient
+     * @returns {boolean} - True for successfull DM, else False
      */
     directMessageUser(recipient_id, remaining, limit) {
         // console.log("Direct Messaging User ...");
@@ -74,7 +82,6 @@ class ServeTwitter {
                 AUTH_PATH,
             ],
             (err, stdout, stderr) => {
-                console.log(stderr);
                 if (err) return false;
                 else if (stdout === "200") return true;
                 return false;
@@ -82,11 +89,13 @@ class ServeTwitter {
         );
     }
 
-    /**Returns true for successfull comment, else false
-     * Parameters:  Tweet ID to comment to,
-     *              Confidence of prediction,
-     *              Timestamps for frames detected fake,
-     *              Boolean value true for Video real, else false
+    /**
+     * 
+     * @param {string} tweetId - Tweet ID to comment to
+     * @param {number} confidence - Confidence of prediction
+     * @param {string array} timestamps - Timestamps for frames detected fake
+     * @param {boolean} isReal - Boolean value true for Video real, else false
+     * @returns {boolean} True for successfull comment, else False
      */
     commentOnTweet(tweetId, confidence, timestamps, isReal) {
         // console.log("Commenting on user tweet ...");
@@ -118,7 +127,7 @@ class ServeTwitter {
             ],
             (err, stdout, stderr) => {
                 if (err) return false;
-                else if (stdout === "200") { console.log("true"); return true }
+                else if (stdout === "200") return true
                 else return false;
             }
         );
@@ -137,6 +146,6 @@ class ServeTwitter {
 //     false
 // );
 
-new ServeTwitter().fetchTweets();
+// new ServeTwitter().fetchTweets();
 
 module.exports = new ServeTwitter();
