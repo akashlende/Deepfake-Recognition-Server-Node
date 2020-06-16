@@ -10,7 +10,8 @@ const twitter = require("./ServeTwitter");
 const pythonExec = "python";
 const timeInMinutes = 1;
 
-setInterval(() => {
+// setInterval
+(() => {
     twitter.fetchTweets((tweet) => {
         let url = new URL(tweet.url)
 
@@ -25,20 +26,22 @@ setInterval(() => {
 
         file.on("finish", () => {
             console.log("Download finished");
-            execSync(
-                `${pythonExec} -W ignore predict.py -m model\\full_c40.p -i ${file.path} --cuda`
+            let model = execSync(
+                `${pythonExec} -W ignore predict.py -m model\\full_raw.p -i ${file.path} --cuda`
             );
+            model.stdout.on("data", (stdout) => console.log(stdout));
             let temp = file.path.split('\\');
             temp = temp[temp.length - 1]
             const resultFile = fs.readFileSync(__dirname + "\\twitter-json\\" + temp.split('.')[0] + ".json");
             const data = JSON.parse(resultFile.toString());
             const videoResult = parseModelOutput(data)
 
-            twitter.directMessageUser(tweet.userId, 45, 100);
-            twitter.commentOnTweet(tweet.tweetId, 0.98, ['00:45'], videoResult.majority == "REAL" ? true : false)
+            twitter.directMessageUser(tweet.userId, 32, 100);
+            twitter.commentOnTweet(tweet.tweetId, 0.81, ['00:46'], videoResult.majority == "REAL" ? true : false)
         });
     });
-}, timeInMinutes * 60 * 1000);
+})()
+// , timeInMinutes * 60 * 1000);
 
 
 const parseModelOutput = (data) => {

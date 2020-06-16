@@ -230,7 +230,12 @@ def test_full_image_network(video_path, model_path, output_path,
     if writer is not None:
         writer.release()
 
-    out_file = open("frames.json", "w")
+    url = video_path
+    
+    link = url.split('\\')
+    fileName = link[len(link)-1].split('.')[0]
+
+    out_file = open("twitter-json\\"+fileName+".json", "w")
     json.dump(frame_conf, out_file, indent=2)
     out_file.close()
     return frame_conf
@@ -248,6 +253,14 @@ if __name__ == '__main__':
     p.add_argument('--cuda', action='store_true')
     args = p.parse_args()
     url = args.video_path
+    
+    link = url.split('\\')
+    fileName = link[len(link)-1].split('.')[0]
+    # frame_conf = open("frames.json", 'r').read()
+    # out_file = open("twitter-json\\"+fileName+".json", "w")
+    # json.dump(json.loads(frame_conf), out_file, indent=2)
+    # out_file.close()
+
     if url.endswith('.mp4') or url.endswith('.avi'):
         print(test_full_image_network(**vars(args)))
     else:
