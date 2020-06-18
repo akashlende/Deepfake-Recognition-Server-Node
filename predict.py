@@ -231,7 +231,7 @@ def test_full_image_network(video_path, model_path, output_path,
         writer.release()
 
     url = video_path
-    
+
     link = url.split('\\')
     fileName = link[len(link)-1].split('.')[0]
 
@@ -253,7 +253,7 @@ if __name__ == '__main__':
     p.add_argument('--cuda', action='store_true')
     args = p.parse_args()
     url = args.video_path
-    
+
     link = url.split('\\')
     fileName = link[len(link)-1].split('.')[0]
     # frame_conf = open("frames.json", 'r').read()

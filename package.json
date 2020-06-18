@@ -15,6 +15,7 @@
         "crypto": "^1.0.1",
         "express": "^4.17.1",
         "fetch": "^1.1.0",
+        "mongoose": "^5.9.19",
         "node-rest-client": "^3.1.0",
         "oauth-1.0a": "^2.2.6",
         "rapidapi-connect": "^0.0.6",
