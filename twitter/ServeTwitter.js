@@ -32,7 +32,9 @@ class ServeTwitter {
 						let temp = {};
 						temp.created_at = tweet.created_at;
 						temp.tweet_id = tweet.id_str;
+						// TODO: Check if tweet is already processed.
 						temp.userId = tweet.user.id_str;
+						// TODO: Using userID check in DB for remaining limit.
 						temp.screen_name = tweet.user.screen_name;
 
 						const variants =
@@ -45,7 +47,7 @@ class ServeTwitter {
 						let j = brList.indexOf(-1);
 						if (j != -1) brList[j] = Math.max(...brList) - 1;
 
-						// Change max to min if you want lower quality video
+						// * Change max to min if you want lower quality video
 						let i = brList.indexOf(Math.max(...brList));
 						temp.url = variants[i].url;
 						response.push(temp);

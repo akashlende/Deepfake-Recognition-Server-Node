@@ -28,7 +28,6 @@ const pythonExec = "python";
 			let model = execSync(
 				`${pythonExec} -W ignore predict.py -m model\\full_raw.p -i ${file.path} --cuda`
 			);
-			model.stdout.on("data", (stdout) => console.log(stdout));
 			let temp = file.path.split("\\");
 			temp = temp[temp.length - 1];
 			const resultFile = fs.readFileSync(
@@ -63,6 +62,8 @@ const parseModelOutput = (data) => {
 	const fakePercent = Math.round((fakeCount / frames.length) * 100);
 	const majority = realCount >= fakeCount ? "REAL" : "FAKE";
 
+	// TODO: Retrieve timestamps
+	// TODO: Retrieve confidence scores
 	return {
 		frameCount: frames.length,
 		realPercent: realPercent,

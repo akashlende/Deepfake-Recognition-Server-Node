@@ -35,6 +35,7 @@ app.listen(port, () => {
 	}).then((res) => {
 		tweets = res.data;
 		tweets.forEach((tweet) => {
+			// TODO: Send each tweet for classification
 			deepfakeDB.insert(
 				"users",
 				{
