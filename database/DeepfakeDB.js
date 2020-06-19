@@ -24,7 +24,10 @@ class DeepfakeDB {
 	insert(collection, data, callback) {
 		switch (collection) {
 			case "users":
-				User.findOne({ _id: data._id }, (err, user) => {
+				// Checking if that same tweet exists, instead of if the user exists.
+				/* If it writes only on the basis of the user's existence, 
+				the new tweets of the user are not written into the 'users' collection*/
+				User.findOne({ tweet_id: data.tweet_id }, (err, user) => {
 					if (!user) User.create(data).then((value) => callback(value));
 				});
 				break;
