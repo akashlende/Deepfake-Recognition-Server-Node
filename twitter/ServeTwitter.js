@@ -63,7 +63,7 @@ class ServeTwitter {
 	}
 
 	sendTweets(req, res) {
-		this.fetchTweets(JSON.parse(req.body), (tweet) => {
+		this.fetchTweets(req.body, (tweet) => {
 			res.send(tweet);
 		});
 	}
@@ -78,9 +78,9 @@ class ServeTwitter {
 		// console.log("Direct Messaging User ...");
 		execFile(
 			`./requests/dm/dist/${
-				process.platform == "win32"
-					? "dm.exe"
-					: process.platform == "darwin"
+			process.platform == "win32"
+				? "dm.exe"
+				: process.platform == "darwin"
 					? "dm_mac"
 					: "dm"
 			}`,
@@ -120,9 +120,9 @@ class ServeTwitter {
 		stamps += "]";
 		execFile(
 			`./requests/comment/dist/${
-				process.platform == "win32"
-					? "comment.exe"
-					: process.platform == "darwin"
+			process.platform == "win32"
+				? "comment.exe"
+				: process.platform == "darwin"
 					? "comment_mac"
 					: "comment"
 			}`,

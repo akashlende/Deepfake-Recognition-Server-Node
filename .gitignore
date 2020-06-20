@@ -1,11 +1,13 @@
-node_modules/
+node_modules
 input/
 model/
 !/input/.gitkeep
 !/model/.gitkeep
 result.mp4
 /.vscode
-twitter-videos/
-twitter-json/
-
+twitter-videos/*.mp4
+twitter-json/*.json
+video-results/*.mp4
 real.mp4
+video-cache/*.mp4
+video-cache/*.avi
