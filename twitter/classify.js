@@ -7,7 +7,24 @@ const { execSync } = require("child_process");
 
 const pythonExec = "python";
 
-const classify = function (tweet) {
+const classify = (filePath) => {
+	let promise = new Promise((resolve, reject) => {
+		execSync(
+			`${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} --cuda`
+		);
+		let temp = file.path.split("\\");
+		temp = temp[temp.length - 1];
+		const resultFile = fs.readFileSync(
+			".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json"
+		);
+		const data = JSON.parse(resultFile.toString());
+		const videoResult = parseModelOutput(data);
+		resolve(videoResult);
+	});
+	return promise;
+};
+
+const downloadVideo = function (tweet) {
 	let promise = new Promise((resolve, reject) => {
 		let url = new URL(tweet.url);
 
@@ -25,19 +42,11 @@ const classify = function (tweet) {
 
 		file.on("finish", async () => {
 			console.log("Download finished");
-			execSync(
-				`${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${file.path} --cuda`
-			);
-			let temp = file.path.split("\\");
-			temp = temp[temp.length - 1];
-			const resultFile = fs.readFileSync(
-				".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json"
-			);
-			const data = JSON.parse(resultFile.toString());
-			const videoResult = parseModelOutput(data);
-			resolve({
-				processed_tweet: tweet,
-				video_result: videoResult,
+			classify(file.path).then((videoResult) => {
+				resolve({
+					processed_tweet: tweet,
+					video_result: videoResult,
+				});
 			});
 		});
 	});
@@ -69,4 +78,5 @@ const parseModelOutput = (data) => {
 	};
 };
 
-module.exports = classify;
+module.exports = downloadVideo;
+exports.classify = classify;

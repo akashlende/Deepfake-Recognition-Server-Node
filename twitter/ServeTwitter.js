@@ -2,7 +2,7 @@ const process = require("process");
 const execFile = require("child_process").execFile;
 const axios = require("axios");
 const DeepfakeDB = require("../database/DeepfakeDB");
-const classify = require("./classify");
+const downloadVideo = require("./classify");
 
 const AUTH_PATH = "..\\requests\\auth.json";
 
@@ -86,7 +86,7 @@ class ServeTwitter {
 				res.end(`There aren't any tweets to process.`);
 			}
 			tweets.forEach((tweet) => {
-				classify(tweet)
+				downloadVideo(tweet)
 					.then((result) => {
 						deepfakeDB.insert(
 							"users",

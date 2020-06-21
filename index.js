@@ -5,11 +5,10 @@ const path = require("path");
 const ffmpeg = require("fluent-ffmpeg"); // for processing and getting information on video files
 const uniqueFilename = require("unique-filename");
 const bodyParser = require("body-parser");
-
+const classify = require("./twitter/classify").classify;
 const ServeTwitter = require("./twitter/ServeTwitter");
 
 const serveTwitter = new ServeTwitter();
-
 const port = process.env.PORT || 3000;
 const timeInMinutes = 1;
 const MaxFileSizeinMB = 100;
@@ -106,12 +105,15 @@ app.post("/classify", (req, res, next) => {
 								res.setHeader("Content-Type", "application/json");
 								res.send({ code: 429, message: "Rate limit exceeded" });
 							} else {
-								// TODO: Video Processing here
-								res.statusCode = 200;
-								res.setHeader("Content-Type", "application/json");
-								res.send({
-									code: 200,
-									message: "Video processed successfully!",
+								classify(req.file.path).then((result) => {
+									res.statusCode = 200;
+									res.setHeader("Content-Type", "application/json");
+									res.send({
+										code: 200,
+										message: "Video processed successfully!",
+										video_result: result,
+									});
+									// TODO: Decrement user remaining
 								});
 							}
 						});
