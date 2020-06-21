@@ -42,13 +42,14 @@ class DeepfakeDB {
 	}
 
 	findUser(userId, callback) {
-		User.findOne({ _id: userId }).exec()
-			.then(user => callback(user))
+		User.findOne({ _id: userId })
+			.exec()
+			.then((user) => callback(user));
 	}
 
-	remove(collection, id, callback) { }
+	remove(collection, id, callback) {}
 
-	update(collection, id, data, callback) { }
+	update(collection, id, data, callback) {}
 }
 
 module.exports = DeepfakeDB;

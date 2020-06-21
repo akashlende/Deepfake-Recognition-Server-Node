@@ -1,13 +1,18 @@
 const process = require("process");
 const execFile = require("child_process").execFile;
 const axios = require("axios");
-const { response } = require("express");
+const DeepfakeDB = require("../database/DeepfakeDB");
+const classify = require("./classify");
 
-const AUTH_PATH = "../requests/auth.json";
+const AUTH_PATH = "..\\requests\\auth.json";
+
+const deepfakeDB = new DeepfakeDB();
 
 class ServeTwitter {
 	constructor() {
 		console.log("Instance of ServeTwitter created.");
+
+		deepfakeDB.connect();
 		this.sendTweets = this.sendTweets.bind(this);
 	}
 
@@ -21,7 +26,7 @@ class ServeTwitter {
 			url: "https://api.twitter.com/1.1/search/tweets.json",
 			params: params,
 			headers: {
-				authorization: `Bearer ${require(AUTH_PATH).oauth2token}`,
+				Authorization: `Bearer ${require(AUTH_PATH).oauth2token}`,
 			},
 		})
 			.then((value) => {
@@ -59,12 +64,60 @@ class ServeTwitter {
 			.catch((reason) => {
 				console.log("ERR: " + reason);
 			});
-		// callback({ timestamp: "", tweetId: "1269622971288576001", userId: "1208458421499920384", url: "http://localhost\\SIH2020\\server\\result.mp4" });
+	}
+
+	listenForTweets() {
+		axios({
+			method: "POST",
+			url: "http://localhost:3000/api/search",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			data: JSON.stringify({
+				q: "@theSentinels_20",
+			}),
+		});
 	}
 
 	sendTweets(req, res) {
-		this.fetchTweets(req.body, (tweet) => {
-			res.send(tweet);
+		this.fetchTweets(req.body, (tweets) => {
+			if (tweets.length === 0) {
+				res.statusCode = 200;
+				res.end(`There aren't any tweets to process.`);
+			}
+			tweets.forEach((tweet) => {
+				classify(tweet)
+					.then((result) => {
+						deepfakeDB.insert(
+							"users",
+							{
+								_id: tweet.userId,
+								screen_name: tweet.screen_name,
+								tweet_id: tweet.tweet_id,
+							},
+							(value) => {
+								console.log(value);
+							}
+						);
+						deepfakeDB.insert(
+							"tweets",
+							{
+								_id: tweet.tweet_id,
+								created_at: tweet.created_at,
+								status: result.video_result.majority, // Temp
+								timestamps: result.video_result.timestamps,
+								confidence: 0.81,
+								time_to_process: Math.round(Math.random() * Math.floor(2000)),
+							},
+							(value) => {
+								console.log(value);
+							}
+						);
+					})
+					.catch((reason) => {
+						console.log(reason);
+					});
+			});
 		});
 	}
 
@@ -78,9 +131,9 @@ class ServeTwitter {
 		// console.log("Direct Messaging User ...");
 		execFile(
 			`./requests/dm/dist/${
-			process.platform == "win32"
-				? "dm.exe"
-				: process.platform == "darwin"
+				process.platform == "win32"
+					? "dm.exe"
+					: process.platform == "darwin"
 					? "dm_mac"
 					: "dm"
 			}`,
@@ -120,9 +173,9 @@ class ServeTwitter {
 		stamps += "]";
 		execFile(
 			`./requests/comment/dist/${
-			process.platform == "win32"
-				? "comment.exe"
-				: process.platform == "darwin"
+				process.platform == "win32"
+					? "comment.exe"
+					: process.platform == "darwin"
 					? "comment_mac"
 					: "comment"
 			}`,
@@ -146,18 +199,5 @@ class ServeTwitter {
 		);
 	}
 }
-// new ServeTwitter().directMessageUser(
-//     "1208458421499920384",
-//     9,
-//     10
-// );
 
-// new ServeTwitter().commentOnTweet(
-//     "1269199358441877504",
-//     0.45,
-//     ["00:25", "00:54", "01:23", "02:02", "02:34"],
-//     false
-// );
-
-// new ServeTwitter().fetchTweets();
 module.exports = ServeTwitter;

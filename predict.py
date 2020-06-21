@@ -138,7 +138,7 @@ def test_full_image_network(video_path, model_path, output_path,
     # Read and write
     reader = cv2.VideoCapture(video_path)
 
-    video_fn = "video-results\\" + fileName + '.mp4'
+    video_fn = "twitter\\video-results\\" + fileName + '.mp4'
     os.makedirs(output_path, exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
@@ -235,7 +235,7 @@ def test_full_image_network(video_path, model_path, output_path,
     if writer is not None:
         writer.release()
 
-    out_file = open("twitter-json\\"+fileName+".json", "w")
+    out_file = open("twitter\\twitter-json\\"+fileName+".json", "w")
     json.dump(frame_conf, out_file, indent=2)
     out_file.close()
     return frame_conf
