@@ -4,6 +4,7 @@ const https = require("https");
 const http = require("http");
 const uniqueFilename = require("unique-filename");
 const { execSync } = require("child_process");
+const { performance } = require("perf_hooks");
 
 const pythonExec = "python";
 
@@ -42,8 +43,12 @@ const downloadVideo = function (tweet) {
 
 		file.on("finish", async () => {
 			console.log("Download finished");
+			let start = performance.now();
 			classify(file.path).then((videoResult) => {
+				let end = performance.now();
+				const time_taken = end - start;
 				resolve({
+					time_to_process: time_taken,
 					processed_tweet: tweet,
 					video_result: videoResult,
 				});
@@ -74,6 +79,7 @@ const parseModelOutput = (data) => {
 		realPercent: realPercent,
 		fakePercent: fakePercent,
 		majority: majority,
+		confidence: 0.81,
 		fps: fps,
 	};
 };

@@ -22,10 +22,15 @@ const TweetSchema = new Schema({
 		type: Number,
 		required: true,
 	},
-	time_to_process: {
+	time_ms: {
 		type: Number,
 		required: true,
 		default: 1000,
+	},
+	time_human_readable: {
+		type: String,
+		required: true,
+		default: "",
 	},
 });
 

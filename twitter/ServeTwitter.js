@@ -8,12 +8,20 @@ const AUTH_PATH = "..\\requests\\auth.json";
 
 const deepfakeDB = new DeepfakeDB();
 
+function millisToMinutesAndSeconds(millis) {
+	var minutes = Math.floor(millis / 60000);
+	var seconds = ((millis % 60000) / 1000).toFixed(0);
+	return (
+		minutes + " minutes and " + (seconds < 10 ? "0" : "") + seconds + " seconds"
+	);
+}
+
 class ServeTwitter {
 	constructor() {
 		console.log("Instance of ServeTwitter created.");
-
 		deepfakeDB.connect();
 		this.sendTweets = this.sendTweets.bind(this);
+		// console.log(millisToMinutesAndSeconds(140000));
 	}
 
 	/**
@@ -88,6 +96,9 @@ class ServeTwitter {
 			tweets.forEach((tweet) => {
 				downloadVideo(tweet)
 					.then((result) => {
+						let human_time = millisToMinutesAndSeconds(
+							Math.floor(result.time_to_process)
+						);
 						deepfakeDB.insert(
 							"users",
 							{
@@ -96,21 +107,24 @@ class ServeTwitter {
 								tweet_id: tweet.tweet_id,
 							},
 							(value) => {
-								console.log(value);
-							}
-						);
-						deepfakeDB.insert(
-							"tweets",
-							{
-								_id: tweet.tweet_id,
-								created_at: tweet.created_at,
-								status: result.video_result.majority, // Temp
-								timestamps: result.video_result.timestamps,
-								confidence: 0.81,
-								time_to_process: Math.round(Math.random() * Math.floor(2000)),
-							},
-							(value) => {
-								console.log(value);
+								console.log(`User ${value.screen_name} tweet processed`);
+								deepfakeDB.insert(
+									"tweets",
+									{
+										_id: tweet.tweet_id,
+										created_at: tweet.created_at,
+										status: result.video_result.majority,
+										timestamps: result.video_result.timestamps,
+										confidence: result.video_result.confidence,
+										time_ms: result.time_to_process,
+										time_human_readable: human_time,
+									},
+									(value) => {
+										console.log(
+											`${tweet.screen_name}'s tweet took ${value.time_human_readable}`
+										);
+									}
+								);
 							}
 						);
 					})
