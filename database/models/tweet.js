@@ -6,31 +6,15 @@ const TweetSchema = new Schema({
 		type: String,
 		required: true,
 	},
-	created_at: {
-		type: String,
-		required: true,
-	},
-	status: {
-		type: String,
-		required: true,
-	},
-	timestamps: {
-		type: Array,
-		required: true,
-	},
-	confidence: {
+	userId: {
 		type: Number,
 		required: true,
+		
 	},
-	time_ms: {
-		type: Number,
-		required: true,
-		default: 1000,
-	},
-	time_human_readable: {
+	videoId: {
 		type: String,
 		required: true,
-		default: "",
+	
 	},
 });
 

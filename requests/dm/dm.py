@@ -5,7 +5,7 @@ import getopt
 import json
 
 
-def dm(id, remaining, limit, auth):
+def dm(id, message, auth):
     url = 'https://api.twitter.com/1.1/direct_messages/events/new.json'
     auth = OAuth1(auth["consumerKey"], auth["consumerSecret"],
                   auth["oauthToken"], auth["tokenSecret"])
@@ -17,7 +17,7 @@ def dm(id, remaining, limit, auth):
                     "recipient_id": id
                 },
                 "message_data": {
-                    "text": "Thank you for using DeepFake Recognition API by The Sentinels.\n ("+remaining+"/"+limit+" API Calls remaining) \n*Daily limit will reset at 01/08/2020 23:59:59\n\nFor complete report and more features visit our home page.",
+                    "text": message,
                     "ctas": [
                         {
                             "type": "web_url",
@@ -30,38 +30,34 @@ def dm(id, remaining, limit, auth):
         }
     }
     data = json.dumps(payload)
-    response = requests.post(url, auth=auth,data=data)
+    response = requests.post(url, auth=auth, data=data)
     print(response.status_code)
 
 
 def main(argv):
     recipientId = ''
-    remaining = ''
-    limit = ''
+    message = ''
     auth = {}
     try:
-        opts, args = getopt.getopt(argv, "hi:r:l:a:", [
-                                   "help", "recepient=", "remaining=", "limit=", "auth="])
+        opts, args = getopt.getopt(argv, "hi:m:a:", [
+                                   "help", "recepient=", "message=", "auth="])
     except getopt.GetoptError:
-        print('Usage: dm -i <recipient_id> -r <remaining> -l <limit> --auth <JSON_auth_file_path>')
+        print('Usage: dm -i <recipient_id> -m <message> --auth <JSON_auth_file_path>')
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             print("-h or --help       : View list of command line arguments available.  For example: comment -h \n")
             print("-i or --recepient  : Recepient ID of the person you want to dm to. For example: 12084584214993220323\n")
-            print("-r or --remaining  : Remaining api calls for an user")
-            print("-l or --limit      : Total api calls allocated to an user")
+            print("-m or --message    : Text to direct message the recepient")
             print("-a or --auth       : Path to json auth file containing consumer key and secret along with Oauth token and secret. For example:  ./auth.json\n")
         elif opt in ("-i", "--recepient"):
             recipientId = arg
-        elif opt in ("-r", "--remaining"):
-            remaining = arg
-        elif opt in ("-l", "--limit"):
-            limit = arg
+        elif opt in ("-m", "--message"):
+            message = arg
         elif opt in ("--auth"):
             f = open(arg, 'r')
             auth = json.loads(f.read())
-    dm(recipientId, remaining, limit, auth)
+    dm(recipientId, message, auth)
 
 
 if __name__ == "__main__":

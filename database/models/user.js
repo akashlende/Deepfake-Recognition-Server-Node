@@ -1,29 +1,41 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const VideoSchema = new Schema({
+  _id: {
+    type: String,
+    required: true,
+  },
+  feedback: {
+    type: String,
+    required: true,
+    default: "",
+  },
+  tweetId: {
+    type: String,
+    required: true,
+  },
+});
+
 const UserSchema = new Schema({
-	_id: {
-		type: String,
-		required: true,
-	},
-	screen_name: {
-		type: String,
-		required: true,
-	},
-	limit: {
-		type: Number,
-		required: true,
-		default: 10,
-	},
-	remaining: {
-		type: Number,
-		required: true,
-		default: 10,
-	},
-	tweet_id: {
-		type: String,
-		required: true,
-	},
+  _id: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    default: null,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  twitterUserId: {
+    type: String,
+    required: true,
+  },
+
+  videos: [VideoSchema],
 });
 
 const User = mongoose.model("user", UserSchema);

@@ -9,80 +9,79 @@ const { performance } = require("perf_hooks");
 const pythonExec = "python";
 
 const classify = (filePath) => {
-	let promise = new Promise((resolve, reject) => {
-		execSync(
-			`${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} --cuda`
-		);
-		let temp = file.path.split("\\");
-		temp = temp[temp.length - 1];
-		const resultFile = fs.readFileSync(
-			".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json"
-		);
-		const data = JSON.parse(resultFile.toString());
-		const videoResult = parseModelOutput(data);
-		resolve(videoResult);
-	});
-	return promise;
+  let promise = new Promise((resolve, reject) => {
+    execSync(
+      `${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} `
+    );
+    let temp = filePath.split("\\");
+    temp = temp[temp.length - 1];
+    const resultFile = fs.readFileSync(
+      ".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json"
+    );
+    const data = JSON.parse(resultFile.toString());
+    const videoResult = parseModelOutput(data);
+    resolve(videoResult);
+  });
+  return promise;
 };
 
 const downloadVideo = function (tweet) {
-	let promise = new Promise((resolve, reject) => {
-		let url = new URL(tweet.url);
+  let promise = new Promise((resolve, reject) => {
+    let url = new URL(tweet.url);
 
-		const uniqueFileName = uniqueFilename(
-			".\\twitter\\twitter-videos",
-			"video"
-		);
-		file = fs.createWriteStream(uniqueFileName + ".mp4");
-		console.log("File created:", file.path);
+    const uniqueFileName = uniqueFilename(
+      ".\\twitter\\twitter-videos",
+      "video"
+    );
+    file = fs.createWriteStream(uniqueFileName + ".mp4");
+    console.log("File created:", file.path);
 
-		if (url.protocol === "http:")
-			http.get(url, (response) => response.pipe(file));
-		else if (url.protocol === "https:")
-			https.get(url, (response) => response.pipe(file));
+    if (url.protocol === "http:")
+      http.get(url, (response) => response.pipe(file));
+    else if (url.protocol === "https:")
+      https.get(url, (response) => response.pipe(file));
 
-		file.on("finish", async () => {
-			console.log("Download finished");
-			let start = performance.now();
-			classify(file.path).then((videoResult) => {
-				let end = performance.now();
-				const time_taken = end - start;
-				resolve({
-					time_to_process: time_taken,
-					processed_tweet: tweet,
-					video_result: videoResult,
-				});
-			});
-		});
-	});
-	return promise;
+    file.on("finish", async () => {
+      console.log("Download finished");
+      let start = performance.now();
+      classify(file.path).then((videoResult) => {
+        let end = performance.now();
+        const time_taken = end - start;
+        resolve({
+          time_to_process: time_taken,
+          processed_tweet: tweet,
+          video_result: videoResult,
+        });
+      });
+    });
+  });
+  return promise;
 };
 
 const parseModelOutput = (data) => {
-	const frames = data.frames;
-	const fps = data.fps;
-	let realCount = 0;
-	let fakeCount = 0;
-	frames.forEach((frame) => {
-		if (frame == 0) realCount += 1;
-		else fakeCount += 1;
-	});
+  const frames = data.frames;
+  const fps = data.fps;
+  let realCount = 0;
+  let fakeCount = 0;
+  frames.forEach((frame) => {
+    if (frame == 0) realCount += 1;
+    else fakeCount += 1;
+  });
 
-	const realPercent = Math.round((realCount / frames.length) * 100);
-	const fakePercent = Math.round((fakeCount / frames.length) * 100);
-	const majority = realCount >= fakeCount ? "REAL" : "FAKE";
+  const realPercent = Math.round((realCount / frames.length) * 100);
+  const fakePercent = Math.round((fakeCount / frames.length) * 100);
+  const majority = realCount >= fakeCount ? "REAL" : "FAKE";
 
-	// TODO: Retrieve timestamps
-	// TODO: Retrieve confidence scores
-	return {
-		frameCount: frames.length,
-		realPercent: realPercent,
-		fakePercent: fakePercent,
-		majority: majority,
-		confidence: 0.81,
-		fps: fps,
-	};
+  // TODO: Retrieve timestamps
+  // TODO: Retrieve confidence scores
+  return {
+    frameCount: frames.length,
+    realPercent: realPercent,
+    fakePercent: fakePercent,
+    majority: majority,
+    confidence: 0.81,
+    fps: fps,
+  };
 };
 
-module.exports = downloadVideo;
-exports.classify = classify;
+module.exports = { downloadVideo, classify };
