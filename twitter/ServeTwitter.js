@@ -9,7 +9,6 @@ const AUTH_PATH = "..\\requests\\auth.json";
 const deepfakeDB = new DeepfakeDB();
 
 function millisToMinutesAndSeconds(millis) {
-  // Akash: Dont delete this function, we need this in near future
   var minutes = Math.floor(millis / 60000);
   var seconds = ((millis % 60000) / 1000).toFixed(0);
   return minutes + " minutes and " + (seconds < 10 ? "0" : "") + seconds + " seconds";
@@ -144,7 +143,6 @@ class ServeTwitter {
       }
       tweets.forEach((tweet) => {
         if (tweet !== null) {
-          let abcdef = tweet.tweet_id;
           deepfakeDB.findTwitterUser(tweet.userId, (user) => {
             if (user == null) {
               // If user does not exist create one
@@ -163,11 +161,9 @@ class ServeTwitter {
               });
             } else {
               // If user already exists
-              console.log(abcdef + " : " + "for present user");
               deepfakeDB.findLimitClassify(user._id, (data) => {
                 if (data.remaining > 0) {
                   // Process the video if user limit is not exhausted
-                  console.log(abcdef + " : " + "remaining>0");
                   this.processVideo(tweet, user);
                 } else {
                   // DM user about API limit exhausted
@@ -187,7 +183,6 @@ class ServeTwitter {
     // Download video, classify it and get results
     downloadVideo(tweet)
       .then((result) => {
-        console.log(abcdef + " : " + "downloaded video");
         // Insert results for the video in database
         deepfakeDB.insert(
           // TODO: add timestamps once ML model is improved

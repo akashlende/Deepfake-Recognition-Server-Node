@@ -45,20 +45,16 @@ async function getVideo(url, path) {
 }
 
 const downloadVideo = function (tweet) {
-  let abcdef = tweet.tweet_id;
   let promise = new Promise((resolve, reject) => {
     let url = new URL(tweet.url);
 
     const uniqueFileName = uniqueFilename(".\\twitter\\twitter-videos", "video");
-    console.log(abcdef + " : " + "unique file name");
 
     let file = { path: uniqueFileName + ".mp4" };
 
-    console.log(abcdef + " : " + tweet.url);
     console.log("File created:", file.path);
 
     getVideo(url.toString(), uniqueFileName + ".mp4").then(() => {
-      console.log(abcdef + " : " + "Download finished");
       let start = performance.now();
       classify(file.path).then((videoResult) => {
         let end = performance.now();
@@ -71,7 +67,6 @@ const downloadVideo = function (tweet) {
         });
       });
     });
-    // });
   });
   return promise;
 };

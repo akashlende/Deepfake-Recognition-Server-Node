@@ -50,7 +50,7 @@ module.exports = (d, callback) => {
       bitrate: d.bitrate / d.duration + "frames/second",
       ratio: d.ratio,
       confidence: d.confidence,
-    }, // go ahead now
+    },
     path: "./twitter/pdf-cache/" + d.videoId + ".pdf",
   };
   pdf

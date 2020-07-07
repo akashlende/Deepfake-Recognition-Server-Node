@@ -236,7 +236,6 @@ app.post("/classify", (req, res, next) => {
                       res.statusCode = 200;
                       res.setHeader("Content-Type", "application/json");
                       res.send({
-                        // bas db drop krke insert kiya..it was working meine wahi kiya  toh working rukh gaya tha uska
                         code: 200,
                         message: "Video is being processed ",
                       });
