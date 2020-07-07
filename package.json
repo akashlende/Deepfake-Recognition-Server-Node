@@ -23,6 +23,7 @@
         "node-rest-client": "^3.1.0",
         "nodemon": "^2.0.4",
         "oauth-1.0a": "^2.2.6",
+        "pdf-creator-node": "^1.4.1",
         "rapidapi-connect": "^0.0.6",
         "request": "^2.88.2",
         "requests": "^0.3.0",

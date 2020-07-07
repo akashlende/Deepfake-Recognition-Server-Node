@@ -8,3 +8,4 @@ model/
 *.json
 *.avi
 __pycache__
+twitter/pdf-cache/*

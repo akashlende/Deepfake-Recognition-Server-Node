@@ -8,21 +8,23 @@ const VideoSchema = new Schema({
   },
   feedback: {
     type: String,
-    required: true,
     default: "",
   },
   tweetId: {
     type: String,
-    required: true,
+    default: null,
   },
 });
 
 const UserSchema = new Schema({
   _id: {
     type: String,
-    required: true,
   },
   email: {
+    type: String,
+    default: null,
+  },
+  password: {
     type: String,
     default: null,
   },
@@ -32,7 +34,7 @@ const UserSchema = new Schema({
   },
   twitterUserId: {
     type: String,
-    required: true,
+    default: null,
   },
 
   videos: [VideoSchema],

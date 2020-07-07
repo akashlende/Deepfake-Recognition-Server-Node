@@ -7,9 +7,10 @@ const uniqueFilename = require("unique-filename");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const fs = require("fs");
+const mongoose = require("mongoose");
 
 const classify = require("./twitter/classify").classify;
-const mongoose = require("mongoose");
+const pdfGenerator = require("./pdf-generation/generatePdf");
 const ServeTwitter = require("./twitter/ServeTwitter");
 const DeepfakeDB = require("./database/DeepfakeDB");
 
@@ -22,10 +23,7 @@ const MaxFileSizeinMB = 100;
 const MaxPlaybackTimeInMins = 1;
 const MaxFPSAllowed = 30;
 const { performance } = require("perf_hooks");
-const {
-  DH_CHECK_P_NOT_SAFE_PRIME,
-  POINT_CONVERSION_UNCOMPRESSED,
-} = require("constants");
+const { DH_CHECK_P_NOT_SAFE_PRIME, POINT_CONVERSION_UNCOMPRESSED } = require("constants");
 const { resolve } = require("path");
 
 const app = express();
@@ -53,6 +51,49 @@ const upload = multer({
 
 app.post("/api/search", serveTwitter.sendTweets);
 
+app.get("/pdf", (req, res, next) => {
+  const userId = req.query.userId;
+  const videoId = req.query.videoId;
+  deepfakeDB.findUser(userId, (user) => {
+    if (user !== null) {
+      deepfakeDB.findVideo(videoId).then((video) => {
+        if (video !== null) {
+          v = user.videos.filter((video) => video._id === videoId);
+          if (v.length !== 0) {
+            const data = {
+              userId: user._id,
+              videoId: video._id,
+              status: video.status,
+              ratio: video.realToFakeRatio,
+              confidence: video.confidence,
+              duration: video.duration,
+              checksum: video.fileChecksum,
+              bitrate: video.bitrate,
+              size: video.fileSize,
+            };
+            pdfGenerator(data, (path) => {
+              res.statusCode = 200;
+              res.download(path.filename, "report.pdf");
+            });
+          } else {
+            res.statusCode = 403;
+            res.setHeader("Content-Type", "application/json");
+            res.send({ code: 403, message: "Video doesn't belong to user" });
+          }
+        } else {
+          res.statusCode = 404;
+          res.setHeader("Content-Type", "application/json");
+          res.send({ code: 404, message: "Video not found" });
+        }
+      });
+    } else {
+      res.statusCode = 404;
+      res.setHeader("Content-Type", "application/json");
+      res.send({ code: 404, message: "User not found" });
+    }
+  });
+});
+
 function getChecksum(path) {
   return new Promise(function (resolve, reject) {
     const hash = crypto.createHash("md5");
@@ -77,7 +118,7 @@ app.post("/fetch-history", (req, res, next) => {
         console.log(rate);
         if (rate.remaining > 0) {
           res.statusCode = 200;
-          data = {
+          let data = {
             id: req.body.userId,
             twitterid: user.tweet_id,
             vid: user.videos,
@@ -88,7 +129,6 @@ app.post("/fetch-history", (req, res, next) => {
 
           for (var i = 0; i < user.videos.length; i++) {
             let video = user.videos[i];
-            console.log("id" + video._id);
             vdata.push(deepfakeDB.findVideo(video._id));
           }
 
@@ -134,93 +174,104 @@ app.post("/classify", (req, res, next) => {
       getChecksum(req.file.path)
         .then((value) => {
           console.log("Checksum : " + value);
-          checksum = value;
+          const checksum = value;
+          let duration = 0;
+          let bitrate = 0;
+          let fileSize = 0;
 
-          ffmpeg.ffprobe(
-            `twitter\\video-cache\\${fileName}`,
-            (err, metadata) => {
-              if (err)
-                // Errors related to ffprobe will be handled here
-                console.log(err);
-              else {
-                let streamFlag = false;
-                for (let i = 0; i < metadata.streams.length; i++) {
-                  let stream = metadata.streams[i];
-                  if (stream.codec_type === "video") {
-                    exist = true;
-                    if (stream.duration > 60 * MaxPlaybackTimeInMins) {
-                      res.statusCode = 413;
-                      res.setHeader("Content-Type", "application/json");
-                      res.send({
-                        code: 413,
-                        message: `Video length should not exceed ${MaxPlaybackTimeInMins} minutes`,
-                      });
-                      errFlag = true;
-                    } else if (
-                      stream.nb_frames >
-                      60 * MaxPlaybackTimeInMins * MaxFPSAllowed
-                    ) {
-                      res.statusCode = 413;
-                      res.setHeader("Content-Type", "application/json");
-                      res.send({
-                        code: 413,
-                        message:
-                          `Total frames in video should not exceed ` +
-                          `${
-                            60 * MaxPlaybackTimeInMins * MaxFPSAllowed
-                          } minutes`,
-                      });
-                      errFlag = true;
-                    }
-                    streamFlag = true;
-                    break;
+          ffmpeg.ffprobe(`twitter\\video-cache\\${fileName}`, (err, metadata) => {
+            if (err)
+              // Errors related to ffprobe will be handled here
+              console.log(err);
+            else {
+              let streamFlag = false;
+              for (let i = 0; i < metadata.streams.length; i++) {
+                let stream = metadata.streams[i];
+                if (stream.codec_type === "video") {
+                  exist = true;
+                  duration = stream.duration;
+                  bitrate = stream.nb_frames;
+                  fileSize = fs.statSync(`twitter\\video-cache\\${fileName}`);
+                  console.log(fileSize.size + " bytes");
+                  if (stream.duration > 60 * MaxPlaybackTimeInMins) {
+                    res.statusCode = 413;
+                    res.setHeader("Content-Type", "application/json");
+                    res.send({
+                      code: 413,
+                      message: `Video length should not exceed ${MaxPlaybackTimeInMins} minutes`,
+                    });
+                    errFlag = true;
+                  } else if (stream.nb_frames > 60 * MaxPlaybackTimeInMins * MaxFPSAllowed) {
+                    res.statusCode = 413;
+                    res.setHesCode = 413;
+                    res.setHeader("Content-Type", "application/json");
+                    res.send({
+                      code: 413,
+                      message:
+                        `Total frames in video should not exceed ` +
+                        `${60 * MaxPlaybackTimeInMins * MaxFPSAllowed} minutes`,
+                    });
+                    errFlag = true;
                   }
+                  streamFlag = true;
+                  break;
                 }
-                if (!streamFlag) {
-                  res.statusCode = 422;
-                  res.setHeader("Content-Type", "application/json");
-                  res.send({ code: 422, message: `No video codec found` });
-                  errFlag = true;
-                }
-                if (!errFlag) {
-                  // All Error Handled up till here
-                  deepfakeDB.findLimitClassify(req.body.userId, (rate) => {
-                    if (rate.remaining <= 0) {
-                      res.statusCode = 429;
+              }
+              if (!streamFlag) {
+                res.statusCode = 422;
+                res.setHeader("Content-Type", "application/json");
+                res.send({ code: 422, message: `No video codec found` });
+                errFlag = true;
+              }
+              if (!errFlag) {
+                // All Error Handled up till here
+                deepfakeDB.findLimitClassify(req.body.userId, (rate) => {
+                  if (rate.remaining <= 0) {
+                    res.statusCode = 429;
+                    res.setHeader("Content-Type", "application/json");
+                    res.send({ code: 429, message: "Rate limit exceeded" });
+                  } else {
+                    deepfakeDB.decClassifyRemaining(req.body.userId, () => {
+                      console.log("decrement done");
+                      res.statusCode = 200;
                       res.setHeader("Content-Type", "application/json");
-                      res.send({ code: 429, message: "Rate limit exceeded" });
-                    } else {
-                      deepfakeDB.decClassifyRemaining(req.body.userId, () => {
-                        console.log("decrement done");
-                        res.statusCode = 200;
-                        res.setHeader("Content-Type", "application/json");
-                        res.send({
-                          code: 200,
-                          message: "Video is being processed ",
-                        });
-                        classify(req.file.path).then((result) => {
-                          data = {
-                            _id: req.body.userId,
-                            filePath: req.file.path,
-                            videoExists: exist,
-                            timeToProcess: result.time_taken,
-                            confidence: result.confidence,
-                            realToFakeRatio: result.realPercent,
-                            status: result.majority,
-                            fileChecksum: checksum,
+                      res.send({
+                        // bas db drop krke insert kiya..it was working meine wahi kiya  toh working rukh gaya tha uska
+                        code: 200,
+                        message: "Video is being processed ",
+                      });
+                      classify(req.file.path).then((result) => {
+                        let data = {
+                          filePath: req.file.path,
+                          videoExists: exist,
+                          timeToProcess: result.time_to_process,
+                          confidence: result.confidence,
+                          realToFakeRatio: result.realPercent,
+                          status: result.majority,
+                          fileChecksum: checksum,
+                          duration: duration,
+                          bitrate: bitrate,
+                          fileSize: fileSize.size,
+                        };
+                        deepfakeDB.insert("videos", data, (video) => {
+                          let dd = {
+                            _id: video._id,
+                            feedback: "",
+                            tweetId: "",
                           };
-                          deepfakeDB.insert("videos", (data) => {
+
+                          deepfakeDB.insertUserVideo(req.body.userId, dd, (user) => {
                             console.log("vid inserted in db ");
-                            console.log(data);
+                            console.log(user);
                           });
                         });
                       });
-                    }
-                  });
-                }
+                    });
+                  }
+                });
               }
             }
-          );
+          });
         })
         .catch(console.error);
     }
@@ -232,5 +283,5 @@ app.listen(port, () => {
   setInterval(() => {
     // serveTwitter.listenForTweets();
   }, timeInMinutes * 60 * 1000);
-  serveTwitter.listenForTweets();
+  // serveTwitter.listenForTweets();
 });

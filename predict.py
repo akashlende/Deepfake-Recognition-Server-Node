@@ -251,21 +251,25 @@ if __name__ == '__main__':
     p.add_argument('--start_frame', type=int, default=0)
     p.add_argument('--end_frame', type=int, default=None)
     p.add_argument('--cuda', action='store_true')
+    p.add_argument('--dev', action='store_true')
     args = p.parse_args()
     url = args.video_path
 
     link = url.split('\\')
     fileName = link[len(link)-1].split('.')[0]
-    # frame_conf = open("frames.json", 'r').read()
-    # out_file = open("twitter-json\\"+fileName+".json", "w")
-    # json.dump(json.loads(frame_conf), out_file, indent=2)
-    # out_file.close()
 
-    if url.endswith('.mp4') or url.endswith('.avi'):
-        print(test_full_image_network(**vars(args)))
+    if args.dev:
+        frame_conf = open("frames.json", 'r').read()
+        out_file = open("twitter\\twitter-json\\"+fileName+".json", "w")
+        json.dump(json.loads(frame_conf), out_file, indent=2)
+        out_file.close()
+
     else:
-        r = requests.get(url, allow_redirects=True)
-        file_name = os.path.join('input', 'video.mp4')
-        open(file_name, 'wb').write(r.content)
-        args.video_path = file_name
-        print(test_full_image_network(**vars(args)))
+        if url.endswith('.mp4') or url.endswith('.avi'):
+            print(test_full_image_network(**vars(args)))
+        else:
+            r = requests.get(url, allow_redirects=True)
+            file_name = os.path.join('input', 'video.mp4')
+            open(file_name, 'wb').write(r.content)
+            args.video_path = file_name
+            print(test_full_image_network(**vars(args)))

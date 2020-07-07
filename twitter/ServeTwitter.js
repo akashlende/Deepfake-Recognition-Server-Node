@@ -9,11 +9,10 @@ const AUTH_PATH = "..\\requests\\auth.json";
 const deepfakeDB = new DeepfakeDB();
 
 function millisToMinutesAndSeconds(millis) {
+  // Akash: Dont delete this function, we need this in near future
   var minutes = Math.floor(millis / 60000);
   var seconds = ((millis % 60000) / 1000).toFixed(0);
-  return (
-    minutes + " minutes and " + (seconds < 10 ? "0" : "") + seconds + " seconds"
-  );
+  return minutes + " minutes and " + (seconds < 10 ? "0" : "") + seconds + " seconds";
 }
 
 class ServeTwitter {
@@ -21,12 +20,9 @@ class ServeTwitter {
     console.log("Instance of ServeTwitter created.");
     deepfakeDB.connect();
     this.sendTweets = this.sendTweets.bind(this);
-    // console.log(millisToMinutesAndSeconds(140000));
   }
 
   /**
-   *
-   *
    *
    * @param {callback} response - Gives object with userId, tweetId, timestamp, url.
    */
@@ -43,45 +39,86 @@ class ServeTwitter {
       .then((value) => {
         const tweets = value.data.statuses;
         let response = [];
+        console.log("Number of tweets found: ", tweets.length);
         tweets.forEach((tweet) => {
-          if (tweet.extended_entities !== undefined) {
-            let temp = {};
-            temp.created_at = tweet.created_at;
-            temp.tweet_id = tweet.id_str;
-            temp.userId = tweet.user.id_str;
-            temp.screen_name = tweet.user.screen_name;
+          response.push(
+            new Promise((resolve, reject) => {
+              deepfakeDB.isTweetProcessed(tweet.id_str, (isProcessed) => {
+                if (isProcessed == false) {
+                  if (tweet.extended_entities !== undefined) {
+                    let temp = {};
+                    temp.created_at = tweet.created_at;
+                    temp.tweet_id = tweet.id_str;
+                    temp.userId = tweet.user.id_str;
+                    temp.screen_name = tweet.user.screen_name;
+                    temp.tweetUrl = tweet.entities.media[0].url;
 
-            const variants =
-              tweet.extended_entities.media[0].video_info.variants;
-            let brList = [];
-            variants.forEach((variant) => {
-              if (variant.bitrate == undefined) brList.push(-1);
-              else brList.push(variant.bitrate);
-            });
-            let j = brList.indexOf(-1);
-            if (j != -1) brList[j] = Math.max(...brList) - 1;
+                    const variants = tweet.extended_entities.media[0].video_info.variants;
+                    let brList = [];
+                    variants.forEach((variant) => {
+                      if (variant.bitrate == undefined) brList.push(-1);
+                      else brList.push(variant.bitrate);
+                    });
+                    let j = brList.indexOf(-1);
+                    if (j != -1) brList[j] = Math.max(...brList) - 1;
 
-            // * Change max to min if you want lower quality video
-            let i = brList.indexOf(Math.max(...brList));
-            temp.url = variants[i].url;
-            temp.tweetUrl = tweet.entities.media.url;
-            response.push(temp);
-          } else {
-            let message = ` 
-            Your latest tweet is not being 
-            classified as the tweet contains no video. \n\n
-            
-            *Daily limit will reset at 23:59:59 hours according to Indian Standard Time.\n
-          `;
-            this.directMessageUser(tweet.id_str, message);
-          }
+                    // * Change max to min if you want lower quality video
+                    let i = brList.indexOf(Math.max(...brList));
+                    temp.url = variants[i].url;
+                    resolve(temp);
+                  } else {
+                    console.log("Tweet without video found!");
+
+                    deepfakeDB.findUser(tweet.user.id_str, async (user) => {
+                      if (user == null) {
+                        await deepfakeDB.createNewUser(
+                          {
+                            _id: tweet.user.id_str,
+                            name: tweet.user.screen_name,
+                            twitterUserId: tweet.user.id_str,
+                            videos: [],
+                          },
+                          (user) => {
+                            deepfakeDB.insert(
+                              "tweets",
+                              {
+                                _id: tweet.id_str,
+                                userId: user._id,
+                                videoId: null,
+                              },
+                              () => resolve(null),
+                            );
+                          },
+                        );
+                      } else {
+                        await deepfakeDB.insert(
+                          "tweets",
+                          {
+                            _id: tweet.id_str,
+                            userId: user._id,
+                            videoId: null,
+                          },
+                          () => resolve(null),
+                        );
+                      }
+                    });
+                    let message = `Your latest tweet is not being classified as the tweet contains no video.`;
+                    this.directMessageUser(tweet.user.id_str, message);
+                  }
+                } else resolve(null);
+              });
+            }),
+          );
         });
 
-        if (callback) callback(response);
+        Promise.all(response).then((response) => {
+          console.log(response);
+          if (callback) callback(response);
+        });
       })
       .catch((reason) => {
         console.log("ERR: " + reason);
-      }); // rukh aisa mat delete kar ab?
+      });
   }
   listenForTweets() {
     axios({
@@ -92,73 +129,71 @@ class ServeTwitter {
       },
       data: JSON.stringify({
         q: "@theSentinels_20",
+        count: 100,
       }),
     });
   }
 
   sendTweets(req, res) {
+    // Entry point for serving twitter
     this.fetchTweets(req.body, (tweets) => {
+      // Fetch tweets from last week
       if (tweets.length === 0) {
-        console.log(req.body);
         res.statusCode = 200;
         res.end(`There aren't any tweets to process.`);
       }
-
       tweets.forEach((tweet) => {
-        deepfakeDB.findUser(tweet.userId, (user) => {
-          if (user == null) {
-            console.log("user: ..............", user);
-            deepfakeDB.insert(
-              "users",
-              {
+        if (tweet !== null) {
+          let abcdef = tweet.tweet_id;
+          deepfakeDB.findTwitterUser(tweet.userId, (user) => {
+            if (user == null) {
+              // If user does not exist create one
+              let userData = {
                 _id: tweet.userId,
                 email: "",
                 name: tweet.screen_name,
                 password: "",
-                twitterUserId: tweet.tweet_id, //ismei kya err hai? pata nahi
-                name: tweet.screen_name,
+                twitterUserId: tweet.userId,
                 videos: [],
-              },
-              (user) => {
-                console.log("user: ..............", user);
-                deepfakeDB.insert(
-                  "limits-classify",
-                  { _id: user._id, limit: 10, remaining: 10 },
-                  () => {
-                    this.processVideo(tweet);
-                  }
-                );
-              }
-            );
-          } else {
-            deepfakeDB.findLimitClassify(user._id, (data) => {
-              if (data.remaining > 0) {
-                this.processVideo(tweet);
-              } else {
-                let message = ` 
-                  Your latest tweet "${tweet.tweetUrl}" is not being 
-                  classified as your daily limit for classification 
-                  is over. \n\n
-
-                  *Daily limit will reset at 23:59:59 hours Indian Standard Time.\n
-                `;
-                this.directMessageUser(user.twitterUserId, message);
-              }
-            });
-          }
-        });
+              };
+              deepfakeDB.createNewUser(userData, (user) => {
+                console.log(`New user created with userId : ${user._id}`);
+                // Process the video
+                this.processVideo(tweet, user);
+              });
+            } else {
+              // If user already exists
+              console.log(abcdef + " : " + "for present user");
+              deepfakeDB.findLimitClassify(user._id, (data) => {
+                if (data.remaining > 0) {
+                  // Process the video if user limit is not exhausted
+                  console.log(abcdef + " : " + "remaining>0");
+                  this.processVideo(tweet, user);
+                } else {
+                  // DM user about API limit exhausted
+                  let message = `Your latest tweet ${tweet.tweetUrl} is not being classified as your daily limit for classification is over. \n\n*Daily limit will reset at 23:59:59 hours Indian Standard Time.\n`;
+                  this.directMessageUser(user.twitterUserId, message);
+                }
+              });
+            }
+          });
+        }
       });
     });
   }
 
-  processVideo(tweet) {
+  processVideo(tweet, user) {
+    let abcdef = tweet.tweet_id;
+    // Download video, classify it and get results
     downloadVideo(tweet)
       .then((result) => {
+        console.log(abcdef + " : " + "downloaded video");
+        // Insert results for the video in database
         deepfakeDB.insert(
-          // TODO: timestamps
+          // TODO: add timestamps once ML model is improved
           "videos",
           {
-            filePath: result.video_result.filePath,
+            filePath: result.filePath,
             status: result.video_result.majority,
             realToFakeRatio: result.video_result.realPercent,
             fileChecksum: "",
@@ -169,55 +204,49 @@ class ServeTwitter {
           },
           (video) => {
             console.log(
-              `${tweet.screen_name}'s tweet took ${result.time_to_process}milliseconds`
+              `${tweet.screen_name}'s tweet took ${millisToMinutesAndSeconds(
+                result.time_to_process,
+              )}`,
             );
+            // Insert results for the tweet in the database
             deepfakeDB.insert(
               "tweets",
               {
                 _id: tweet.tweet_id,
-                userID: user._id,
-                VideoId: video._id,
+                userId: user._id,
+                videoId: video._id,
               },
               (tweet) => {
+                // Insert video and tweet details in user collection
                 deepfakeDB.insertUserVideo(
-                  tweet.userID,
+                  tweet.userId,
                   {
                     _id: video._id,
                     feedback: "",
                     tweetId: tweet._id,
                   },
                   (user) => {
+                    // Decrement the user API limit for classification
                     deepfakeDB.decClassifyRemaining(user._id, (rate) => {
-                      console.log("decrement done");
-                      let message = `
-                        Thank you for using DeepFake Recognition API by The Sentinels.\n
-                        (${rate.remaining}/${rate.limit} API Calls remaining) \n
-                        *Daily limit will reset at 23:59:59 hours Indian Standard Time.\n\n
-
-                        For complete report and more features visit our home page.\n
-                      `;
-                      this.directMessageUser(user.twitterUserId, message);
-                      this.commentOnTweet(
-                        tweet._id,
-                        video.confidence,
-                        video.timestamps,
-                        video.status == "REAL" ? true : false
+                      // DM the user about API limit and comment on tweet with results
+                      console.log(rate);
+                      let message = `Thanks for using DeepFake Recognition API by The Sentinels.\n(${rate.remaining}/${rate.limit} API Calls remaining) \n*Daily limit will reset at 23:59:59 hours Indian Standard Time.\n\nFor complete report and more features visit our home page.\n`;
+                      console.log(this.directMessageUser(user.twitterUserId, message));
+                      console.log(
+                        this.commentOnTweet(
+                          tweet._id,
+                          video.confidence,
+                          [2, 3, 5, 6],
+                          video.status == "REAL" ? true : false,
+                        ),
                       );
                     });
-                  }
+                  },
                 );
-              }
+              },
             );
-          }
+          },
         );
-        res.setHeader("Content-Type", "application/json");
-        res.send({
-          code: 200,
-          message: "User found",
-          videos,
-          users,
-          tweets,
-        });
       })
       .catch((reason) => {
         console.log(reason);
@@ -233,18 +262,18 @@ class ServeTwitter {
     // console.log("Direct Messaging User ...");
     execFile(
       `./requests/dm/dist/${
-        process.platform == "win32"
-          ? "dm.exe"
-          : process.platform == "darwin"
-          ? "dm_mac"
-          : "dm"
+        process.platform == "win32" ? "dm.exe" : process.platform == "darwin" ? "dm_mac" : "dm"
       }`,
-      ["--recepient", recipient_id, "--message", message, "--auth", AUTH_PATH],
+      ["--recepient", recipient_id, "--message", message, "--auth", "./requests/auth.json"],
       (err, stdout, stderr) => {
+        console.log("dm");
+        console.log("err : ", err);
+        console.log("stdout : ", stdout);
+        console.log("stderr : ", stderr);
         if (err) return false;
         else if (stdout === "200") return true;
         return false;
-      }
+      },
     );
   }
 
@@ -257,7 +286,6 @@ class ServeTwitter {
    * @returns {boolean} True for successfull comment, else False
    */
   commentOnTweet(tweetId, confidence, timestamps, isReal) {
-    // console.log("Commenting on user tweet ...");
     let stamps = "[";
     for (let i = 0; i < timestamps.length; i++) {
       stamps += timestamps[i];
@@ -282,13 +310,17 @@ class ServeTwitter {
         "--timestamp",
         stamps,
         "--auth",
-        AUTH_PATH,
+        "./requests/auth.json",
       ],
       (err, stdout, stderr) => {
+        console.log("comment");
+        console.log("err : ", err);
+        console.log("stdout : ", stdout);
+        console.log("stderr : ", stderr);
         if (err) return false;
         else if (stdout === "200") return true;
         else return false;
-      }
+      },
     );
   }
 }

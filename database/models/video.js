@@ -3,10 +3,6 @@ const Schema = mongoose.Schema;
 
 const VideoSchema = new Schema(
   {
-    _id: {
-      type: String,
-      required: true,
-    },
     filePath: {
       type: String,
       required: true,
@@ -20,8 +16,8 @@ const VideoSchema = new Schema(
       required: true,
     },
     fileChecksum: {
-      type: Number,
-      required: true,
+      type: String,
+      default: "",
     },
     timestamps: {
       type: Array,
@@ -39,8 +35,20 @@ const VideoSchema = new Schema(
       type: String,
       required: true,
     },
+    duration: {
+      type: Number,
+      default: null,
+    },
+    bitrate: {
+      type: Number,
+      default: null,
+    },
+    fileSize: {
+      type: Number,
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Video = mongoose.model("video", VideoSchema);

@@ -3,6 +3,7 @@ const URL = require("url").URL;
 const https = require("https");
 const http = require("http");
 const uniqueFilename = require("unique-filename");
+const axios = require("axios");
 const { execSync } = require("child_process");
 const { performance } = require("perf_hooks");
 
@@ -10,50 +11,67 @@ const pythonExec = "python";
 
 const classify = (filePath) => {
   let promise = new Promise((resolve, reject) => {
+    let start = performance.now();
     execSync(
-      `${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} `
+      `${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} --cuda --dev`,
     );
+    let end = performance.now();
     let temp = filePath.split("\\");
     temp = temp[temp.length - 1];
-    const resultFile = fs.readFileSync(
-      ".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json"
-    );
+    const resultFile = fs.readFileSync(".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json");
     const data = JSON.parse(resultFile.toString());
-    const videoResult = parseModelOutput(data);
+    let videoResult = parseModelOutput(data);
+    videoResult.time_to_process = end - start;
     resolve(videoResult);
   });
   return promise;
 };
 
+async function getVideo(url, path) {
+  const writer = fs.createWriteStream(path);
+
+  const response = await axios({
+    url,
+    method: "GET",
+    responseType: "stream",
+  });
+
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", resolve);
+    writer.on("error", reject);
+  });
+}
+
 const downloadVideo = function (tweet) {
+  let abcdef = tweet.tweet_id;
   let promise = new Promise((resolve, reject) => {
     let url = new URL(tweet.url);
 
-    const uniqueFileName = uniqueFilename(
-      ".\\twitter\\twitter-videos",
-      "video"
-    );
-    file = fs.createWriteStream(uniqueFileName + ".mp4");
+    const uniqueFileName = uniqueFilename(".\\twitter\\twitter-videos", "video");
+    console.log(abcdef + " : " + "unique file name");
+
+    let file = { path: uniqueFileName + ".mp4" };
+
+    console.log(abcdef + " : " + tweet.url);
     console.log("File created:", file.path);
 
-    if (url.protocol === "http:")
-      http.get(url, (response) => response.pipe(file));
-    else if (url.protocol === "https:")
-      https.get(url, (response) => response.pipe(file));
-
-    file.on("finish", async () => {
-      console.log("Download finished");
+    getVideo(url.toString(), uniqueFileName + ".mp4").then(() => {
+      console.log(abcdef + " : " + "Download finished");
       let start = performance.now();
       classify(file.path).then((videoResult) => {
         let end = performance.now();
         const time_taken = end - start;
         resolve({
+          filePath: file.path,
           time_to_process: time_taken,
           processed_tweet: tweet,
           video_result: videoResult,
         });
       });
     });
+    // });
   });
   return promise;
 };
