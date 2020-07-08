@@ -9,3 +9,4 @@ model/
 *.avi
 __pycache__
 twitter/pdf-cache/*
+auth/config.js
