@@ -40,12 +40,22 @@ userRouter.post("/signup", (req, res) => {
 									remaining: 10,
 								},
 								() => {
-									res.statusCode = 200;
-									res.setHeader("Content-Type", "application/json");
-									res.json({
-										status: "Registration Successful!",
-										success: true,
-									});
+									deepfakeDB.insert(
+										"limits-fetch-history",
+										{
+											_id: user._id,
+											limit: 10,
+											remaining: 10,
+										},
+										() => {
+											res.statusCode = 200;
+											res.setHeader("Content-Type", "application/json");
+											res.json({
+												status: "Registration Successful!",
+												success: true,
+											});
+										}
+									);
 								}
 							);
 						});

@@ -17,7 +17,7 @@ const classify = (filePath) => {
 		let temp = filePath.split("\\");
 		temp = temp[temp.length - 1];
 		const resultFile = fs.readFileSync(
-			".\\twitter\\twitter-json\\" + temp.split(".")[0] + ".json"
+			".\\video-results\\json\\" + temp.split(".")[0] + ".json"
 		);
 		const data = JSON.parse(resultFile.toString());
 		let videoResult = parseModelOutput(data);
@@ -48,10 +48,7 @@ const downloadVideo = function (tweet) {
 	let promise = new Promise((resolve, reject) => {
 		let url = new URL(tweet.url);
 
-		const uniqueFileName = uniqueFilename(
-			".\\twitter\\twitter-videos",
-			"video"
-		);
+		const uniqueFileName = uniqueFilename("video-cache", "video");
 
 		let file = { path: uniqueFileName + ".mp4" };
 

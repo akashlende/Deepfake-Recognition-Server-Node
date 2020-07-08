@@ -64,13 +64,16 @@ class DeepfakeDB {
 				Limit.findOne({})
 					.exec()
 					.then((limits) => {
-						let t = limits.fetchHistory.filter(
-							(limit) => limit.Id === data._id
-						);
-						if (t.length == 0) limits.fetchHistory.push(data);
-						limits.save().then(() => {
-							callback();
-						});
+						if (limits != null) {
+							let t = limits.fetchHistory.filter(
+								(limit) => limit.Id === data._id
+							);
+							if (t.length == 0) limits.fetchHistory.push(data);
+
+							limits.save().then(() => {
+								callback();
+							});
+						}
 					});
 				break;
 			default:
@@ -92,7 +95,7 @@ class DeepfakeDB {
 	}
 
 	findUser(userId, callback) {
-		User.findOne({ _id: userId })
+		User.findById(userId)
 
 			.exec()
 			.then((user) => callback(user));
@@ -127,7 +130,7 @@ class DeepfakeDB {
 			});
 	}
 	findVideo(vidId) {
-		return Video.findOne({ _id: vidId }).exec();
+		return Video.findById(vidId).exec();
 	}
 
 	decFetchRemaining(userId, callback) {

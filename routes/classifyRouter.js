@@ -139,7 +139,7 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 											});
 											classify(req.file.path).then((result) => {
 												let data = {
-													filePath: req.file.path,
+													filePath: `video-results\\video\\${fileName}`,
 													videoExists: exist,
 													timeToProcess: result.time_to_process,
 													confidence: result.confidence,

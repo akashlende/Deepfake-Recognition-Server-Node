@@ -8,6 +8,7 @@ fetchHistory.use(bodyParser.json());
 
 fetchHistory.post("/", authenticate.verifyUser, (req, res, next) => {
 	deepfakeDB.findUser(req.body.userId, (user) => {
+		console.log(user);
 		if (user) {
 			deepfakeDB.findLimitFetchHistory(user._id, (rate) => {
 				console.log(rate);
