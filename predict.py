@@ -111,7 +111,7 @@ def make_response(frames=[]):
 
 
 def test_full_image_network(video_path, model_path, output_path,
-                            start_frame=0, end_frame=None, cuda=False):
+                            start_frame=0, end_frame=None, cuda=False, dev=False):
     """
     Reads a video and evaluates a subset of frames with the a detection network
     that takes in a full frame. Outputs are only given if a face is present

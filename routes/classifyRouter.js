@@ -1,5 +1,5 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+const classify = require("../twitter/classify").classify;
 const deepfakeDB = require("../database/DeepfakeDB");
 const crypto = require("crypto");
 const fs = require("fs");

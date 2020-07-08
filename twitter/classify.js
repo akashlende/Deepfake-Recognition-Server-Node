@@ -11,7 +11,7 @@ const classify = (filePath) => {
 	let promise = new Promise((resolve, reject) => {
 		let start = performance.now();
 		execSync(
-			`${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} --cuda --dev`
+			`${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} --cuda`
 		);
 		let end = performance.now();
 		let temp = filePath.split("\\");

@@ -50,12 +50,14 @@ class DeepfakeDB {
 				Limit.findOne({})
 					.exec()
 					.then((limits) => {
-						let t = limits.classify.filter((limit) => limit.Id === data._id);
-						if (t.length == 0) limits.classify.push(data);
+						if (limits != null) {
+							let t = limits.classify.filter((limit) => limit.Id === data._id);
+							if (t.length == 0) limits.classify.push(data);
 
-						limits.save().then(() => {
-							callback();
-						});
+							limits.save().then(() => {
+								callback();
+							});
+						}
 					});
 				break;
 			case "limits-fetch-history":
