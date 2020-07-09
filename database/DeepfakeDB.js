@@ -109,44 +109,44 @@ class DeepfakeDB {
             });
     }
 
-    findUser(userId, callback) {
-        User.findById(userId)
-
-            .exec()
-            .then((user) => callback(user));
-    }
-    findTwitterUser(twitterId, callback) {
-        User.findOne({ twitterUserId: twitterId })
-
-            .exec()
-            .then((user) => callback(user));
-    }
-    findLimitClassify(userId, callback) {
-        Limit.findOne({})
-            .exec()
-            .then((collection) => {
-                collection.classify.forEach((history) => {
-                    if (history._id == userId) {
-                        callback(history);
-                    } else callback(null);
-                });
-            })
-            .catch((err) => console.log(err));
-    }
-    findLimitFetchHistory(userId, callback) {
-        Limit.findOne({})
-            .exec()
-            .then((collection) => {
-                collection.fetchHistory.forEach((history) => {
-                    if (history._id == userId) {
-                        callback(history);
-                    }
-                });
-            });
-    }
-    findVideo(vidId) {
-        return Video.findById(vidId).exec();
-    }
+  findUser(userId, callback) {
+      User.findById(userId)
+          .exec()
+          .then((user) => callback(user));
+  }
+  findTwitterUser(twitterId, callback) {
+    User.findOne({ twitterUserId: twitterId })
+			.exec()
+			.then((user) => callback(user));
+	}
+	findLimitClassify(userId, callback) {
+		Limit.findOne({})
+			.exec()
+			.then((collection) => {
+				collection.classify.forEach((history) => {
+					console.log(history, userId);
+					if (history._id == userId) {
+						console.log(collection);
+						callback(history);
+					}
+				});
+			})
+			.catch((err) => console.log(err));
+	}
+	findLimitFetchHistory(userId, callback) {
+		Limit.findOne({})
+			.exec()
+			.then((collection) => {
+				collection.fetchHistory.forEach((history) => {
+					if (history._id == userId) {
+						callback(history);
+					}
+				});
+			});
+	}
+	findVideo(vidId) {
+		return Video.findById(vidId).exec();
+	}
 
     decFetchRemaining(userId, callback) {
         let rate;
