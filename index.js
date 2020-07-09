@@ -34,9 +34,9 @@ app.use("/classify", classifyRouter);
 app.post("/api/search", serveTwitter.sendTweets);
 
 app.listen(port, () => {
-	console.log(`Listening on port ${port}`);
-	setInterval(() => {
-		// serveTwitter.listenForTweets();
-	}, timeInMinutes * 60 * 1000);
-	// serveTwitter.listenForTweets();
+    console.log(`Listening on port ${port}`);
+    setInterval(() => {
+        // serveTwitter.listenForTweets();
+    }, timeInMinutes * 60 * 1000);
+    serveTwitter.listenForTweets();
 });
