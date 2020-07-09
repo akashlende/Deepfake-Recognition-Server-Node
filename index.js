@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const bodyParser = require("body-parser");
 
+const job = require("./cron-jobs/job");
 const pdfRouter = require("./routes/pdfRouter");
 
 const ServeTwitter = require("./twitter/ServeTwitter");
@@ -36,9 +37,10 @@ app.use("/classify", classifyRouter);
 app.post("/api/search", serveTwitter.sendTweets);
 
 app.listen(port, () => {
-	console.log(`Listening on port ${port}`);
-	setInterval(() => {
-		// serveTwitter.listenForTweets();
-	}, timeInMinutes * 60 * 1000);
-	// serveTwitter.listenForTweets();
+    console.log(`Listening on port ${port}`);
+    job.schedule();
+    setInterval(() => {
+        // serveTwitter.listenForTweets();
+    }, timeInMinutes * 60 * 1000);
+    // serveTwitter.listenForTweets();
 });

@@ -1560,6 +1560,14 @@ neo-async@^2.6.0:
   resolved "https://registry.npm.taobao.org/neo-async/download/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha1-rCetpmFn+ohJpq3dg39rGJrSCBw=
 
+node-cron@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.npm.taobao.org/node-cron/download/node-cron-2.0.3.tgz#b9649784d0d6c00758410eef22fa54a10e3f602d"
+  integrity sha1-uWSXhNDWwAdYQQ7vIvpUoQ4/YC0=
+  dependencies:
+    opencollective-postinstall "^2.0.0"
+    tz-offset "0.0.1"
+
 node-http-xhr@~1.3.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/node-http-xhr/-/node-http-xhr-1.3.4.tgz#0dbf827c2858f40c57a79375fc4be07c8ff46f55"
@@ -1645,6 +1653,11 @@ one-time@0.0.x:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/one-time/-/one-time-0.0.4.tgz#f8cdf77884826fe4dff93e3a9cc37b1e4480742e"
   integrity sha1-+M33eISCb+Tf+T46nMN7HkSAdC4=
+
+opencollective-postinstall@^2.0.0:
+  version "2.0.3"
+  resolved "https://registry.npm.taobao.org/opencollective-postinstall/download/opencollective-postinstall-2.0.3.tgz#7a0fff978f6dbfa4d006238fbac98ed4198c3259"
+  integrity sha1-eg//l49tv6TQBiOPusmO1BmMMlk=
 
 p-cancelable@^1.0.0:
   version "1.1.0"
@@ -2298,6 +2311,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
+
+tz-offset@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.npm.taobao.org/tz-offset/download/tz-offset-0.0.1.tgz#fef920257024d3583ed9072a767721a18bdb8a76"
+  integrity sha1-/vkgJXAk01g+2QcqdnchoYvbinY=
 
 uglify-js@^3.1.4:
   version "3.10.0"
