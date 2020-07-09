@@ -14,6 +14,8 @@ const MaxFPSAllowed = 30;
 
 const classifyRouter = express.Router();
 
+let actualFileName = "";
+
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
 		cb(null, "video-cache\\");
@@ -21,6 +23,7 @@ const storage = multer.diskStorage({
 
 	filename: (req, file, cb) => {
 		const uniqueFileName = uniqueFilename("", "video");
+		actualFileName = file.originalname;
 		cb(null, uniqueFileName + path.extname(file.originalname));
 	},
 });
@@ -139,6 +142,7 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 											});
 											classify(req.file.path).then((result) => {
 												let data = {
+													fileName: actualFileName,
 													filePath: `video-results\\video\\${fileName}`,
 													videoExists: exist,
 													timeToProcess: result.time_to_process,
