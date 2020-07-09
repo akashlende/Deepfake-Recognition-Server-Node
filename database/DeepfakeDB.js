@@ -86,6 +86,23 @@ class DeepfakeDB {
         }
     }
 
+    updateLimits(callback) {
+        Limit.findOne({})
+            .exec()
+            .then((limits) => {
+                for (let key in limits.toJSON()) {
+                    if (!(key == "_id" || key == "__v")) {
+                        limits[key].forEach((l) => {
+                            l.remaining = l.limit;
+                        });
+                    }
+                }
+                limits.save().then((limits) => {
+                    callback(limits);
+                });
+            });
+    }
+
     insertUserVideo(userId, data, callback) {
         User.findOne({ _id: userId })
             .exec()
@@ -101,25 +118,22 @@ class DeepfakeDB {
 
     findUser(userId, callback) {
         User.findById(userId)
-
             .exec()
             .then((user) => callback(user));
     }
     findTwitterUser(twitterId, callback) {
         User.findOne({ twitterUserId: twitterId })
-
             .exec()
             .then((user) => callback(user));
     }
     findLimitClassify(userId, callback) {
-        console.log("findLimitClassify(userId, callback)", userId);
         Limit.findOne({})
             .exec()
             .then((collection) => {
-                console.log("collection", collection);
                 collection.classify.forEach((history) => {
-                    console.log("history", history._id);
+                    console.log(history, userId);
                     if (history._id == userId) {
+                        console.log(collection);
                         callback(history);
                     }
                 });

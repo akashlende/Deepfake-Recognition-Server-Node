@@ -8,7 +8,7 @@ const pdfGenerator = require("../pdf-generation/generatePdf");
 const pdfRouter = express.Router();
 pdfRouter.use(bodyParser.json());
 
-pdfRouter.get("/", (req, res, next) => {
+pdfRouter.get("/", authenticate.verifyUser, (req, res, next) => {
 	const userId = req.query.userId;
 	const videoId = req.query.videoId;
 	deepfakeDB.findUser(userId, (user) => {
@@ -30,7 +30,8 @@ pdfRouter.get("/", (req, res, next) => {
 						};
 						pdfGenerator(data, (path) => {
 							res.statusCode = 200;
-							res.download(path.filename, "report.pdf");
+							let temp = path.filename.split("\\");
+							res.json({ report: temp[temp.length - 1] });
 						});
 					} else {
 						res.statusCode = 403;
