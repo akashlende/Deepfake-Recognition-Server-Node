@@ -79,6 +79,23 @@ class DeepfakeDB {
         }
     }
 
+    updateLimits(callback) {
+        Limit.findOne({})
+            .exec()
+            .then((limits) => {
+                for (let key in limits.toJSON()) {
+                    if (!(key == "_id" || key == "__v")) {
+                        limits[key].forEach((l) => {
+                            l.remaining = l.limit;
+                        });
+                    }
+                }
+                limits.save().then((limits) => {
+                    callback(limits);
+                });
+            });
+    }
+
     insertUserVideo(userId, data, callback) {
         User.findOne({ _id: userId })
             .exec()

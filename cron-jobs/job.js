@@ -4,8 +4,6 @@ const cron = require("node-cron");
 
 const TimeBeforeDeleteInHours = 24;
 
-// TODO 2. update limits after 1 day
-
 class Job {
     constructor() {}
 
@@ -26,13 +24,18 @@ class Job {
 
                 files.forEach((file) => {
                     fs.unlink(dir + file.name, () => {
-                        console.log(file.name + " deleted");
+                        console.log(dir + file.name + " deleted");
                     });
                 });
             }
         });
     }
 
+    renewLimits() {
+        deepfakeDB.updateLimits((limits) => {
+            console.log("API limits renewed!");
+        });
+    }
     schedule() {
         //              ┌────────────── second (optional)
         //              │ ┌──────────── minute
@@ -47,6 +50,7 @@ class Job {
             this.deleteFiles("../video-cache");
             this.deleteFiles("../video-results/json");
             this.deleteFiles("../video-results/video");
+            this.renewLimits();
         });
         console.log("Cron job scheduled");
     }
