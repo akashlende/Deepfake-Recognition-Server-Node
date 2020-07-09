@@ -30,7 +30,8 @@ pdfRouter.get("/", authenticate.verifyUser, (req, res, next) => {
 						};
 						pdfGenerator(data, (path) => {
 							res.statusCode = 200;
-							res.download(path.filename, "report.pdf");
+							let temp = path.filename.split("\\");
+							res.json({ report: temp[temp.length - 1] });
 						});
 					} else {
 						res.statusCode = 403;

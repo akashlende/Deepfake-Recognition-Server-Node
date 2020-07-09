@@ -25,6 +25,8 @@ app.use(morgan("dev"));
 
 app.use(passport.initialize());
 
+app.use(express.static("pdf-cache"));
+
 app.use("/users", userRouter);
 
 app.use("/pdf", pdfRouter);
@@ -34,9 +36,9 @@ app.use("/classify", classifyRouter);
 app.post("/api/search", serveTwitter.sendTweets);
 
 app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
-    setInterval(() => {
-        // serveTwitter.listenForTweets();
-    }, timeInMinutes * 60 * 1000);
-    serveTwitter.listenForTweets();
+	console.log(`Listening on port ${port}`);
+	setInterval(() => {
+		// serveTwitter.listenForTweets();
+	}, timeInMinutes * 60 * 1000);
+	// serveTwitter.listenForTweets();
 });
