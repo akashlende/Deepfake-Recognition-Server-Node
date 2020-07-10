@@ -11,7 +11,7 @@ const ServeTwitter = require("./twitter/ServeTwitter");
 const serveTwitter = new ServeTwitter();
 
 const port = process.env.PORT || 3000;
-const timeInMinutes = 1;
+const timeInMinutes = 1 / 12;
 const removeHistory = require("./routes/removeHistory");
 const passport = require("passport");
 const fetchHistory = require("./routes/fetchHistory");
@@ -40,7 +40,7 @@ app.listen(port, () => {
     console.log(`Listening on port ${port}`);
     job.schedule();
     setInterval(() => {
-        // serveTwitter.listenForTweets();
+        serveTwitter.listenForTweets();
     }, timeInMinutes * 60 * 1000);
     // serveTwitter.listenForTweets();
 });

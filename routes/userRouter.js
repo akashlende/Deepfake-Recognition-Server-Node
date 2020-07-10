@@ -6,15 +6,21 @@ const passport = require("passport");
 const authenticate = require("../auth/authenticate");
 const deepfakeDB = require("../database/DeepfakeDB");
 const Limit = require("../database/models/limit");
+const mongoose = require("mongoose");
 
 const userRouter = express.Router();
 userRouter.use(bodyParser.json());
 
 userRouter.post("/signup", (req, res) => {
     User.register(
-        new User({ username: req.body.username, email: req.body.email }),
+        new User({
+            _id: mongoose.Types.ObjectId(),
+            username: req.body.username,
+            email: req.body.email,
+        }),
         req.body.password,
         (err, user) => {
+            console.log(err);
             if (err) {
                 res.statusCode = 500;
                 res.setHeader("Content-Type", "application/json");

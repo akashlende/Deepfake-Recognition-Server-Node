@@ -32,21 +32,29 @@ class DeepfakeDB {
 				the new tweets of the user are not written into the 'users' collection*/
                 User.findOne({ _id: data._id }, (err, user) => {
                     if (user == null)
-                        User.create(data).then((value) => callback(value));
+                        User.create(data)
+                            .then((value) => callback(value, true))
+                            .catch((err) => {
+                                if (err.code === 11000) {
+                                    console.log(
+                                        `ERR: Creation of duplicate user ${err.keyValue._id} failed`,
+                                    );
+                                    User.findOne({ _id: data._id }, (err, user) => {
+                                        callback(user, false);
+                                    });
+                                } else throw err;
+                            });
                     else callback(user);
                 });
                 break;
             case "tweets":
                 Tweet.findOne({ _id: data._id }, (err, tweet) => {
-                    if (!tweet)
-                        Tweet.create(data).then((value) => callback(value));
+                    if (!tweet) Tweet.create(data).then((value) => callback(value));
                 });
                 break;
             case "videos":
-                console.log("video in db: ", data);
                 Video.findOne({ _id: data._id }, (err, video) => {
-                    if (!video)
-                        Video.create(data).then((video) => callback(video));
+                    if (!video) Video.create(data).then((video) => callback(video));
                 });
                 break;
             case "limits-classify":
@@ -54,9 +62,7 @@ class DeepfakeDB {
                     .exec()
                     .then((limits) => {
                         if (limits != null) {
-                            let t = limits.classify.filter(
-                                (limit) => limit.Id === data._id
-                            );
+                            let t = limits.classify.filter((limit) => limit.Id === data._id);
                             if (t.length == 0) limits.classify.push(data);
 
                             limits.save().then(() => {
@@ -70,9 +76,7 @@ class DeepfakeDB {
                     .exec()
                     .then((limits) => {
                         if (limits != null) {
-                            let t = limits.fetchHistory.filter(
-                                (limit) => limit.Id === data._id
-                            );
+                            let t = limits.fetchHistory.filter((limit) => limit.Id === data._id);
                             if (t.length == 0) limits.fetchHistory.push(data);
 
                             limits.save().then(() => {
@@ -127,13 +131,13 @@ class DeepfakeDB {
             .then((user) => callback(user));
     }
     findLimitClassify(userId, callback) {
+        let flag = false;
         Limit.findOne({})
             .exec()
             .then((collection) => {
                 collection.classify.forEach((history) => {
-                    console.log(history, userId);
                     if (history._id == userId) {
-                        console.log(collection);
+                        flag = true;
                         callback(history);
                     }
                 });
@@ -172,9 +176,7 @@ class DeepfakeDB {
                         return limit._id === userId;
                     })[0].remaining -= 1;
                 } else {
-                    console.log(
-                        "no user id found in fetchHistory in DeepfakeDB.js"
-                    );
+                    console.log("no user id found in fetchHistory in DeepfakeDB.js");
                 }
                 limits.save().then(() => {
                     callback(rate);
@@ -199,9 +201,7 @@ class DeepfakeDB {
                         return limit._id === userId;
                     })[0].remaining -= 1;
                 } else {
-                    console.log(
-                        "no user id found in Classify in DeepfakeDB.js"
-                    );
+                    console.log("no user id found in Classify in DeepfakeDB.js");
                 }
                 limits.save().then(() => {
                     callback(rate);
@@ -210,11 +210,9 @@ class DeepfakeDB {
     }
 
     createNewUser(data, callback) {
-        this.insert("users", data, (user) => {
-            this.insert(
-                "limits-classify",
-                { _id: user._id, limit: 10, remaining: 10 },
-                () => {
+        this.insert("users", data, (user, n) => {
+            if (n === true) {
+                this.insert("limits-classify", { _id: user._id, limit: 10, remaining: 10 }, () => {
                     this.insert(
                         "limits-fetch-history",
                         {
@@ -225,10 +223,12 @@ class DeepfakeDB {
                         () => {
                             console.log("New user created : ", user._id);
                             callback(user);
-                        }
+                        },
                     );
-                }
-            );
+                });
+            } else {
+                callback(user);
+            }
         });
     }
 
@@ -245,18 +245,18 @@ const deepfakeDB = new DeepfakeDB();
 
 module.exports = deepfakeDB;
 
-// db.limits.insert({
-//     fetchHistory: [
-//         { _id: "12345", limit: 10, remaining: 10 },
-//         { _id: "54321", limit: 10, remaining: 10 },
-//     ],
-//     classify: [
-//         { _id: "12345", limit: 10, remaining: 10 },
-//         { _id: "54321", limit: 10, remaining: 10 },
-//     ],
-// });
-
 /*
+db.limits.insert({
+    fetchHistory: [
+        { _id: "12345", limit: 10, remaining: 10 },
+        { _id: "54321", limit: 10, remaining: 10 },
+    ],
+    classify: [
+        { _id: "12345", limit: 10, remaining: 10 },
+        { _id: "54321", limit: 10, remaining: 10 },
+    ],
+});
+
 db.users.drop()
 db.limits.drop()
 db.videos.drop()
