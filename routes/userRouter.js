@@ -20,7 +20,6 @@ userRouter.post("/signup", (req, res) => {
         }),
         req.body.password,
         (err, user) => {
-            console.log(err);
             if (err) {
                 res.statusCode = 500;
                 res.setHeader("Content-Type", "application/json");
@@ -79,6 +78,7 @@ userRouter.post("/login", passport.authenticate("local"), (req, res) => {
         success: true,
         token: token,
         id: req.user._id,
+        name: req.user.name,
     });
 });
 
