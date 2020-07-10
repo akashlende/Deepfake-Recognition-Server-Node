@@ -1,5 +1,5 @@
 const express = require("express");
-const morgan = require("morgan"); // used for logging to console
+const morgan = require("morgan");
 const cors = require("cors");
 
 const bodyParser = require("body-parser");
@@ -11,7 +11,7 @@ const ServeTwitter = require("./twitter/ServeTwitter");
 const serveTwitter = new ServeTwitter();
 
 const port = process.env.PORT || 3000;
-const timeInMinutes = 1 / 12;
+const timeInMinutes = 1 / 2;
 const removeHistory = require("./routes/removeHistory");
 const passport = require("passport");
 const fetchHistory = require("./routes/fetchHistory");

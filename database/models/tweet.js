@@ -13,6 +13,10 @@ const TweetSchema = new Schema({
     videoId: {
         type: String,
     },
+    processed: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const Tweet = mongoose.model("tweet", TweetSchema);

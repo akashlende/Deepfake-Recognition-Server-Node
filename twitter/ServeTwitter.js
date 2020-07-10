@@ -189,8 +189,19 @@ class ServeTwitter {
                                     this.processVideo(tweet, user);
                                 } else {
                                     // DM user about API limit exhausted
-                                    let message = `Your latest tweet ${tweet.tweetUrl} is not being classified as your daily limit for classification is over. \n\n*Daily limit will reset at 23:59:59 hours Indian Standard Time.\n`;
-                                    this.directMessageUser(user.twitterUserId, message);
+                                    deepfakeDB.insert(
+                                        "tweets",
+                                        {
+                                            _id: tweet.tweet_id,
+                                            userId: user._id,
+                                            videoId: null,
+                                            processed: false,
+                                        },
+                                        () => {
+                                            let message = `Your latest tweet ${tweet.tweetUrl} is not being classified as your daily limit for classification is over. \n\n*Daily limit will reset at 23:59:59 hours Indian Standard Time.\n`;
+                                            this.directMessageUser(user.twitterUserId, message);
+                                        },
+                                    );
                                 }
                             });
                         }
@@ -231,6 +242,7 @@ class ServeTwitter {
                                 _id: tweet.tweet_id,
                                 userId: user._id,
                                 videoId: video._id,
+                                processed: true,
                             },
                             (tweet) => {
                                 // Insert video and tweet details in user collection

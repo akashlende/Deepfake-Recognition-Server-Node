@@ -232,6 +232,28 @@ class DeepfakeDB {
         });
     }
 
+    deleteTweets(callback) {
+        let promises = [];
+        Tweet.find({})
+            .exec()
+            .then((tweets) => {
+                tweets.forEach((tweet) => {
+                    promises.push(
+                        new Promise((resolve, reject) => {
+                            if (tweet.processed === false)
+                                Tweet.remove({ _id: tweet._id }).then((t) => {
+                                    resolve(t);
+                                });
+                            else resolve(tweet);
+                        }),
+                    );
+                });
+                Promise.all(tweets).then((tweets) => {
+                    callback(tweets);
+                });
+            });
+    }
+
     isTweetProcessed(str, callback) {
         Tweet.findOne({ _id: str })
             .exec()
@@ -245,7 +267,7 @@ const deepfakeDB = new DeepfakeDB();
 
 module.exports = deepfakeDB;
 
-/*
+/* 
 db.limits.insert({
     fetchHistory: [
         { _id: "12345", limit: 10, remaining: 10 },

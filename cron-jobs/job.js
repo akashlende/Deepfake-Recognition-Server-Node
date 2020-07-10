@@ -31,6 +31,12 @@ class Job {
         });
     }
 
+    unprocessTweets() {
+        deepfakeDB.deleteTweets(() => {
+            console.log("Un-processed tweets deleted");
+        });
+    }
+
     renewLimits() {
         deepfakeDB.updateLimits((limits) => {
             console.log("API limits renewed!");
@@ -51,6 +57,7 @@ class Job {
             this.deleteFiles("../video-results/json");
             this.deleteFiles("../video-results/video");
             this.renewLimits();
+            this.unprocessTweets();
         });
         console.log("Cron job scheduled");
     }
