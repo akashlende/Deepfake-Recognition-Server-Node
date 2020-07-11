@@ -129,8 +129,8 @@ def test_full_image_network(video_path, model_path, output_path,
     frame_conf['frames'] = []
     url = video_path
 
-    link = url.split('\\')
-    fileName = link[len(link)-1].split('.')[0]
+    link = os.path.split(url)
+    fileName = link[1].split('.')[0]
 
     # #------- Custom code --------
     # #-----------------------------
@@ -138,9 +138,9 @@ def test_full_image_network(video_path, model_path, output_path,
     # Read and write
     reader = cv2.VideoCapture(video_path)
 
-    video_fn = "video-results\\video\\" + fileName + '.mp4'
+    video_fn = os.path.join("video-results", "video", fileName + '.mp4')
     os.makedirs(output_path, exist_ok=True)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
 
     fps = reader.get(cv2.CAP_PROP_FPS)
     num_frames = int(reader.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -235,7 +235,8 @@ def test_full_image_network(video_path, model_path, output_path,
     if writer is not None:
         writer.release()
 
-    out_file = open("video-results\\json\\"+fileName+".json", "w")
+    out_file = open(os.path.join("video-results",
+                                 "json", fileName+".json"), "w")
     json.dump(frame_conf, out_file, indent=2)
     out_file.close()
     return frame_conf
@@ -255,12 +256,13 @@ if __name__ == '__main__':
     args = p.parse_args()
     url = args.video_path
 
-    link = url.split('\\')
-    fileName = link[len(link)-1].split('.')[0]
+    link = os.path.split(url)
+    fileName = link[1].split('.')[0]
 
     if args.dev:
         frame_conf = open("frames.json", 'r').read()
-        out_file = open("video-results\\json\\"+fileName+".json", "w")
+        out_file = open(os.path.join("video-results",
+                                     "json", fileName + '.json'), "w")
         json.dump(json.loads(frame_conf), out_file, indent=2)
         out_file.close()
 

@@ -2,25 +2,25 @@ const fs = require("fs");
 const URL = require("url").URL;
 const uniqueFilename = require("unique-filename");
 const axios = require("axios");
-const { execSync } = require("child_process");
 const { performance } = require("perf_hooks");
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
+const path = require("path");
 
 const pythonExec = "python";
 
 const classify = (filePath) => {
 	let promise = new Promise((resolve, reject) => {
 		let start = performance.now();
+		let modelPath = path.join("model", "full_raw.p");
 		exec(
-			`${pythonExec} -W ignore predict.py -m .\\model\\full_raw.p -i ${filePath} --cuda`
+			`${pythonExec} -W ignore predict.py -m ${modelPath} -i ${filePath} --cuda`
 		)
 			.then((value) => {
 				let end = performance.now();
-				let temp = filePath.split("\\");
-				temp = temp[temp.length - 1];
+				let file = path.parse(filePath);
 				const resultFile = fs.readFileSync(
-					".\\video-results\\json\\" + temp.split(".")[0] + ".json"
+					path.join("video-results", "json", file.name + ".json")
 				);
 				const data = JSON.parse(resultFile.toString());
 				let videoResult = parseModelOutput(data);
@@ -61,16 +61,18 @@ const downloadVideo = function (tweet) {
 
 		getVideo(url.toString(), uniqueFileName + ".mp4").then(() => {
 			let start = performance.now();
-			classify(file.path).then((videoResult) => {
-				let end = performance.now();
-				const time_taken = end - start;
-				resolve({
-					filePath: file.path,
-					time_to_process: time_taken,
-					processed_tweet: tweet,
-					video_result: videoResult,
-				});
-			});
+			classify(file.path)
+				.then((videoResult) => {
+					let end = performance.now();
+					const time_taken = end - start;
+					resolve({
+						filePath: file.path,
+						time_to_process: time_taken,
+						processed_tweet: tweet,
+						video_result: videoResult,
+					});
+				})
+				.catch((err) => reject(err));
 		});
 	});
 	return promise;

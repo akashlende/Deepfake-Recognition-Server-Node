@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const path = require("path");
 
 const bodyParser = require("body-parser");
 
@@ -17,6 +18,8 @@ const passport = require("passport");
 const fetchHistory = require("./routes/fetchHistory");
 const classifyRouter = require("./routes/classifyRouter");
 const userRouter = require("./routes/userRouter");
+const videoRouter = require("./routes/videoRouter");
+const deepfakeDB = require("./database/DeepfakeDB");
 
 const app = express();
 app.use(cors());
@@ -29,6 +32,7 @@ app.use(passport.initialize());
 app.use(express.static("pdf-cache"));
 
 app.use("/users", userRouter);
+app.use("/get-video", videoRouter);
 app.use("/remove", removeHistory);
 app.use("/pdf", pdfRouter);
 app.use("/fetch-history", fetchHistory);
@@ -37,10 +41,18 @@ app.use("/classify", classifyRouter);
 app.post("/api/search", serveTwitter.sendTweets);
 
 app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
-    job.schedule();
-    setInterval(() => {
-        serveTwitter.listenForTweets();
-    }, timeInMinutes * 60 * 1000);
-    // serveTwitter.listenForTweets();
+	console.log(`Listening on port ${port}`);
+	deepfakeDB.insert(
+		"limits",
+		{ fetchHistory: [], classify: [] },
+		(err, value) => {
+			if (err) console.log(err);
+			else console.log("Fresh Limits Created", value);
+		}
+	);
+	job.schedule();
+	setInterval(() => {
+		// serveTwitter.listenForTweets();
+	}, timeInMinutes * 60 * 1000);
+	// serveTwitter.listenForTweets();
 });

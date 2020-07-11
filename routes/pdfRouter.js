@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const deepfakeDB = require("../database/DeepfakeDB");
 const authenticate = require("../auth/authenticate");
+const path = require("path");
 
 const pdfGenerator = require("../pdf-generation/generatePdf");
 
@@ -28,10 +29,11 @@ pdfRouter.get("/", authenticate.verifyUser, (req, res, next) => {
 							bitrate: video.bitrate,
 							size: video.fileSize,
 						};
-						pdfGenerator(data, (path) => {
+						pdfGenerator(data, (filePath) => {
 							res.statusCode = 200;
-							let temp = path.filename.split("\\");
-							res.json({ report: temp[temp.length - 1] });
+							let file = path.parse(filePath.filename);
+							let fileName = file.base;
+							res.json({ report: fileName });
 						});
 					} else {
 						res.statusCode = 403;
