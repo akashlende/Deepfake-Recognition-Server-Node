@@ -3,6 +3,7 @@ const User = require("./models/user");
 const Tweet = require("./models/tweet");
 const Video = require("./models/video");
 const Limit = require("./models/limit");
+const Image = require("./models/image");
 class DeepfakeDB {
 	constructor() {
 		console.log("Database Instance Created");
@@ -55,6 +56,11 @@ class DeepfakeDB {
 			case "videos":
 				Video.findOne({ _id: data._id }, (err, video) => {
 					if (!video) Video.create(data).then((video) => callback(video));
+				});
+				break;
+			case "images":
+				Image.findOne({ _id: data._id }, (err, image) => {
+					if (!image) Image.create(data).then((image) => callback(image));
 				});
 				break;
 			case "limits-classify":
@@ -128,6 +134,19 @@ class DeepfakeDB {
 			.then((user) => {
 				if (user !== null) {
 					user.videos.push(data);
+					user.save().then(() => {
+						callback(user);
+					});
+				}
+			});
+	}
+
+	insertUserImage(userId, data, callback) {
+		User.findOne({ _id: userId })
+			.exec()
+			.then((user) => {
+				if (user !== null) {
+					user.images.push(data);
 					user.save().then(() => {
 						callback(user);
 					});

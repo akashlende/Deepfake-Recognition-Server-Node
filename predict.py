@@ -103,11 +103,78 @@ def predict_with_model(image, model, post_function=nn.Softmax(dim=1),
     return int(prediction), output
 
 
-def make_response(frames=[]):
-    for frame in frames:
-        print(frame)
+def classifyImage(video_path, model_path, output_path, start_frame=0, end_frame=None, cuda=False, dev=False):
+    image_conf = {}
+    image_conf['result'] = []
+    url = video_path
+    link = os.path.split(url)
+    print(link)
+    fileName = link[1].split('.')[0]
 
-    return frames
+    image = cv2.imread(url)
+
+    # Face detector
+    face_detector = dlib.get_frontal_face_detector()
+
+    # Load model
+    if model_path is not None:
+        model = torch.load(model_path, map_location='cpu')
+
+    if cuda:
+        device = torch.device('cuda:0')
+    else:
+        device = torch.device('cpu')
+
+    model = model.to(device)
+
+    font_face = cv2.FONT_HERSHEY_SIMPLEX
+    thickness = 2
+    font_scale = 1
+
+    video_fn = os.path.join("images", "results", link[1])
+    os.makedirs(output_path, exist_ok=True)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_detector(gray, 1)
+
+    height, width = image.shape[:2]
+
+    if len(faces):
+        # For now only take biggest face
+        face = faces[0]
+
+        # --- Prediction ---------------------------------------------------
+        # Face crop with dlib and bounding box scale enlargement
+        x, y, size = get_boundingbox(face, width, height)
+        cropped_face = image[y:y+size, x:x+size]
+
+        # Actual prediction using our model
+        prediction, output = predict_with_model(cropped_face, model,
+                                                device=device)
+        # ------------------------------------------------------------------
+
+        # Text and bb
+        x = face.left()
+        y = face.top()
+        w = face.right() - x
+        h = face.bottom() - y
+        label = 'fake' if prediction == 1 else 'real'
+        color = (0, 255, 0) if prediction == 0 else (0, 0, 255)
+        output_list = [round(float(x), 2) for x in
+                       output.detach().cpu().numpy()[0]]
+        cv2.putText(image, str(output_list)+'=>'+label, (x, y+h+30),
+                    font_face, font_scale,
+                    color, thickness, 2)
+        image_conf['result'].append(output_list)
+        cv2.rectangle(image, (x, y),
+                      (x + w, y + h), color, 2)
+
+        cv2.imwrite(video_fn, image)
+
+    out_file = open(os.path.join("images",
+                                 "json", fileName+".json"), "w")
+    json.dump(image_conf, out_file, indent=2)
+    out_file.close()
+    return image_conf
 
 
 def test_full_image_network(video_path, model_path, output_path,
@@ -265,10 +332,11 @@ if __name__ == '__main__':
                                      "json", fileName + '.json'), "w")
         json.dump(json.loads(frame_conf), out_file, indent=2)
         out_file.close()
-
     else:
         if url.endswith('.mp4') or url.endswith('.avi'):
             print(test_full_image_network(**vars(args)))
+        elif url.endswith('.jpg') or url.endswith('.jpeg') or url.endswith('.png'):
+            print(classifyImage(**vars(args)))
         else:
             r = requests.get(url, allow_redirects=True)
             file_name = os.path.join('input', 'video.mp4')

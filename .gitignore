@@ -4,6 +4,9 @@ model/
 !/input/.gitkeep
 !/model/.gitkeep
 /.vscode
+*.png
+*.jpg
+*.jpeg
 *.mp4
 *.json
 *.avi

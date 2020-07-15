@@ -1,7 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const path = require("path");
 
 const bodyParser = require("body-parser");
 
@@ -19,7 +18,9 @@ const fetchHistory = require("./routes/fetchHistory");
 const classifyRouter = require("./routes/classifyRouter");
 const userRouter = require("./routes/userRouter");
 const videoRouter = require("./routes/videoRouter");
+
 const deepfakeDB = require("./database/DeepfakeDB");
+const imageRouter = require("./routes/imageRouter");
 
 const app = express();
 app.use(cors());
@@ -37,6 +38,7 @@ app.use("/remove", removeHistory);
 app.use("/pdf", pdfRouter);
 app.use("/fetch-history", fetchHistory);
 app.use("/classify", classifyRouter);
+app.use("/image", imageRouter);
 
 app.post("/api/search", serveTwitter.sendTweets);
 
