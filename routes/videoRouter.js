@@ -46,6 +46,12 @@ videoRouter.get("/", authenticate.verifyUser, (req, res, next) => {
 
 videoRouter.get("/video", (req, res, next) => {
 	if (req.query.videoFile === "") {
+		res.statusCode = 403;
+		res.setHeader("Content-Type", "application/json");
+		res.send({
+			message: "Video not provided",
+			success: false,
+		});
 	} else {
 		const filePath = path.join("video-results", "video", req.query.videoFile);
 		const stat = fs.statSync(filePath);

@@ -38,7 +38,7 @@ app.use("/remove", removeHistory);
 app.use("/pdf", pdfRouter);
 app.use("/fetch-history", fetchHistory);
 app.use("/classify", classifyRouter);
-app.use("/image", imageRouter);
+app.use("/get-image", imageRouter);
 
 app.post("/api/search", serveTwitter.sendTweets);
 

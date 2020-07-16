@@ -192,6 +192,9 @@ class DeepfakeDB {
 	findVideo(vidId) {
 		return Video.findById(vidId).exec();
 	}
+	findImage(imgId) {
+		return Image.findById(imgId).exec();
+	}
 
 	decFetchRemaining(userId, callback) {
 		let rate;

@@ -139,34 +139,32 @@ def classifyImage(video_path, model_path, output_path, start_frame=0, end_frame=
     height, width = image.shape[:2]
 
     if len(faces):
-        # For now only take biggest face
-        face = faces[0]
+        for face in faces:
+            # --- Prediction ---------------------------------------------------
+            # Face crop with dlib and bounding box scale enlargement
+            x, y, size = get_boundingbox(face, width, height)
+            cropped_face = image[y:y+size, x:x+size]
 
-        # --- Prediction ---------------------------------------------------
-        # Face crop with dlib and bounding box scale enlargement
-        x, y, size = get_boundingbox(face, width, height)
-        cropped_face = image[y:y+size, x:x+size]
+            # Actual prediction using our model
+            prediction, output = predict_with_model(cropped_face, model,
+                                                    device=device)
+            # ------------------------------------------------------------------
 
-        # Actual prediction using our model
-        prediction, output = predict_with_model(cropped_face, model,
-                                                device=device)
-        # ------------------------------------------------------------------
-
-        # Text and bb
-        x = face.left()
-        y = face.top()
-        w = face.right() - x
-        h = face.bottom() - y
-        label = 'fake' if prediction == 1 else 'real'
-        color = (0, 255, 0) if prediction == 0 else (0, 0, 255)
-        output_list = [round(float(x), 2) for x in
-                       output.detach().cpu().numpy()[0]]
-        cv2.putText(image, str(output_list)+'=>'+label, (x, y+h+30),
-                    font_face, font_scale,
-                    color, thickness, 2)
-        image_conf['result'].append(output_list)
-        cv2.rectangle(image, (x, y),
-                      (x + w, y + h), color, 2)
+            # Text and bb
+            x = face.left()
+            y = face.top()
+            w = face.right() - x
+            h = face.bottom() - y
+            label = 'fake' if prediction == 1 else 'real'
+            color = (0, 255, 0) if prediction == 0 else (0, 0, 255)
+            output_list = [round(float(x), 2) for x in
+                           output.detach().cpu().numpy()[0]]
+            cv2.putText(image, str(output_list)+'=>'+label, (x, y+h+30),
+                        font_face, font_scale,
+                        color, thickness, 2)
+            image_conf['result'].append(prediction)
+            cv2.rectangle(image, (x, y),
+                          (x + w, y + h), color, 2)
 
         cv2.imwrite(video_fn, image)
 

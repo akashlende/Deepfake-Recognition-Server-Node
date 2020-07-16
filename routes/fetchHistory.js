@@ -11,27 +11,41 @@ fetchHistory.post("/", authenticate.verifyUser, (req, res, next) => {
 		console.log(user);
 		if (user) {
 			deepfakeDB.findLimitFetchHistory(user._id, (rate) => {
-				console.log(rate);
 				if (rate.remaining > 0) {
 					res.statusCode = 200;
 					let data = {
 						id: req.body.userId,
 						twitterid: user.tweet_id,
 						vid: user.videos,
+						img: user.images,
 						remaining: rate.remaining - 1,
 					};
 
-					var vdata = [];
+					let vdata = [];
+					let idata = [];
 
-					for (var i = 0; i < user.videos.length; i++) {
+					for (let i = 0; i < user.videos.length; i++) {
 						let video = user.videos[i];
-						vdata.push(deepfakeDB.findVideo(video._id));
+						deepfakeDB.findVideo(video._id).then((value) => {
+							vdata.push(value);
+						});
 					}
 
-					Promise.all(vdata).then((vdata) => {
-						deepfakeDB.decFetchRemaining(rate._id, () => {
-							res.setHeader("Content-Type", "application/json");
-							res.send({ code: 200, message: "User found", data, vdata });
+					for (let i = 0; i < user.images.length; i++) {
+						let image = user.images[i];
+
+						deepfakeDB.findImage(image._id).then((value) => {
+							idata.push(value);
+						});
+					}
+					deepfakeDB.decFetchRemaining(rate._id, () => {
+						res.setHeader("Content-Type", "application/json");
+						res.send({
+							code: 200,
+							message: "User found",
+							data,
+							vdata,
+							idata,
 						});
 					});
 				} else {

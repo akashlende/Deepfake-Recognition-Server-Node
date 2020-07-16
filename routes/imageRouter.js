@@ -104,6 +104,59 @@ imageRouter.post(
 	}
 );
 
+imageRouter.get("/", authenticate.verifyUser, (req, res, next) => {
+	const userId = req.query.userId;
+	const imageId = req.query.imageId;
+
+	deepfakeDB.findUser(userId, (user) => {
+		if (user !== null) {
+			deepfakeDB.findImage(imageId).then((image) => {
+				if (image !== null) {
+					const v = user.images.filter((image) => image._id === imageId);
+					if (v.length !== 0) {
+						res.statusCode = 200;
+						res.setHeader("Content-Type", "application/json");
+						let file = path.parse(image.filePath);
+						res.send({ code: 200, imageFile: file.base });
+					} else {
+						res.statusCode = 403;
+						res.setHeader("Content-Type", "application/json");
+						res.send({
+							code: 403,
+							message: "Image doesn't belong to user",
+							success: false,
+						});
+					}
+				} else {
+					res.statusCode = 404;
+					res.setHeader("Content-Type", "application/json");
+					res.send({ code: 404, message: "Image not found", success: false });
+				}
+			});
+		} else {
+			res.statusCode = 404;
+			res.setHeader("Content-Type", "application/json");
+			res.send({ code: 404, message: "User not found", success: false });
+		}
+	});
+});
+
+imageRouter.get("/image", (req, res, next) => {
+	if (req.query.imageFile === "") {
+		res.statusCode = 403;
+		res.setHeader("Content-Type", "application/json");
+		res.send({
+			message: "Image not provided",
+			success: false,
+		});
+	} else {
+		const filePath = path.join("images", "results", req.query.imageFile);
+		res.statusCode = 200;
+		let file = fs.createReadStream(filePath);
+		file.pipe(res);
+	}
+});
+
 const classifyImage = (filePath) => {
 	let promise = new Promise((resolve, reject) => {
 		let start = performance.now();
@@ -128,11 +181,20 @@ const classifyImage = (filePath) => {
 };
 
 const parseImageData = (data) => {
-	const result = data.result[0];
-	const maxIndex = result.indexOf(Math.max(...result));
+	const result = data.result;
+	let realCount = 0;
+	let fakeCount = 0;
+	result.forEach((face) => {
+		if (face == 0) realCount += 1;
+		else fakeCount += 1;
+	});
+
+	const realPercent = Math.round((realCount / result.length) * 100);
+	const fakePercent = Math.round((fakeCount / result.length) * 100);
+	const majority = realCount >= fakeCount ? "REAL" : "FAKE";
 	return {
-		status: maxIndex == 1 ? "FAKE" : "REAL",
-		confidence: Math.max(...result),
+		status: majority,
+		confidence: majority == "REAL" ? realPercent : fakePercent,
 	};
 };
 
