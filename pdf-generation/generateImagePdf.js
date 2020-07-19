@@ -41,13 +41,13 @@ module.exports = (d, callback) => {
         data: {
             user: " The Sentinels",
             imgSource: d.status == "REAL" ? icons.tick : icons.cross,
-            reportTitle:
-                d.status == "REAL" ? "Image Verified Real" : "Image Found Fake",
+            reportTitle: d.status == "REAL" ? "Image Verified Real" : "Image Found Fake",
             userId: d.userId,
             imageId: d.imageId,
             size: d.size + " bytes",
             checksum: d.checksum,
             confidence: d.confidence,
+            isFacePresent: d.isFacePresent == true ? "Yes" : "No",
         },
         path: "./pdf-cache/" + d.imageId + ".pdf",
     };

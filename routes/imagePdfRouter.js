@@ -16,9 +16,7 @@ imagePdfRouter.get("/", authenticate.verifyUser, (req, res, next) => {
         if (user !== null) {
             deepfakeDB.findImage(imageId).then((image) => {
                 if (image !== null) {
-                    const v = user.images.filter(
-                        (image) => image._id === imageId
-                    );
+                    const v = user.images.filter((image) => image._id === imageId);
                     if (v.length !== 0) {
                         const data = {
                             userId: user._id,
@@ -27,6 +25,7 @@ imagePdfRouter.get("/", authenticate.verifyUser, (req, res, next) => {
                             confidence: image.confidence,
                             size: image.size,
                             checksum: image.checksum,
+                            isFacePresent: image.isFacePresent,
                         };
                         pdfGenerator(data, (filePath) => {
                             res.statusCode = 200;

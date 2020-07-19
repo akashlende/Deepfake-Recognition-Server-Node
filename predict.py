@@ -170,6 +170,11 @@ def classifyImage(video_path, model_path, output_path, start_frame=0, end_frame=
 
     out_file = open(os.path.join("images",
                                  "json", fileName+".json"), "w")
+
+    if len(image_conf['result']) == 0:
+        image_conf['facesPresent'] = False
+    else:
+        image_conf['facesPresent'] = True
     json.dump(image_conf, out_file, indent=2)
     out_file.close()
     return image_conf

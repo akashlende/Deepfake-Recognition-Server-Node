@@ -31,8 +31,12 @@ const ImageSchema = new Schema(
             type: Number,
             required: true,
         },
+        isFacePresent: {
+            type: Boolean,
+            required: true,
+        },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 const Image = mongoose.model("image", ImageSchema);
