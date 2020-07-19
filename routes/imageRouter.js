@@ -177,10 +177,29 @@ imageRouter.get("/image", (req, res, next) => {
             success: false,
         });
     } else {
+        console.log("----");
         const filePath = path.join("images", "results", req.query.imageFile);
         res.statusCode = 200;
         let file = fs.createReadStream(filePath);
         file.pipe(res);
+
+        file.on("error", (err) => {
+            if (err.code == "ENOENT") {
+                res.statusCode = 404;
+                res.setHeader("Content-Type", "application/json");
+                res.send({
+                    message: "No such image found on server",
+                    success: false,
+                });
+            } else {
+                res.statusCode = 500;
+                res.setHeader("Content-Type", "application/json");
+                res.send({
+                    message: "Internal server error",
+                    success: false,
+                });
+            }
+        });
     }
 });
 
