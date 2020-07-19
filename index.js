@@ -18,6 +18,7 @@ const fetchHistory = require("./routes/fetchHistory");
 const classifyRouter = require("./routes/classifyRouter");
 const userRouter = require("./routes/userRouter");
 const videoRouter = require("./routes/videoRouter");
+const imagePdfRouter = require("./routes/imagePdfRouter");
 
 const deepfakeDB = require("./database/DeepfakeDB");
 const imageRouter = require("./routes/imageRouter");
@@ -36,6 +37,7 @@ app.use("/users", userRouter);
 app.use("/get-video", videoRouter);
 app.use("/remove", removeHistory);
 app.use("/pdf", pdfRouter);
+app.use("/pdf-image", imagePdfRouter);
 app.use("/fetch-history", fetchHistory);
 app.use("/classify", classifyRouter);
 app.use("/get-image", imageRouter);
@@ -43,18 +45,18 @@ app.use("/get-image", imageRouter);
 app.post("/api/search", serveTwitter.sendTweets);
 
 app.listen(port, () => {
-	console.log(`Listening on port ${port}`);
-	deepfakeDB.insert(
-		"limits",
-		{ fetchHistory: [], classify: [] },
-		(err, value) => {
-			if (err) console.log(err);
-			else console.log("Fresh Limits Created", value);
-		}
-	);
-	job.schedule();
-	setInterval(() => {
-		// serveTwitter.listenForTweets();
-	}, timeInMinutes * 60 * 1000);
-	// serveTwitter.listenForTweets();
+    console.log(`Listening on port ${port}`);
+    deepfakeDB.insert(
+        "limits",
+        { fetchHistory: [], classify: [] },
+        (err, value) => {
+            if (err) console.log(err);
+            else console.log("Fresh Limits Created", value);
+        }
+    );
+    job.schedule();
+    setInterval(() => {
+        // serveTwitter.listenForTweets();
+    }, timeInMinutes * 60 * 1000);
+    // serveTwitter.listenForTweets();
 });
