@@ -37,11 +37,8 @@ const storage = multer.diskStorage({
 let upload = multer({
     storage: storage,
     fileFilter: (req, file, cb) => {
-        if (
-            file.mimetype == "image/png" ||
-            file.mimetype == "image/jpg" ||
-            file.mimetype == "image/jpeg"
-        ) {
+        let extension = file.originalname.split(".")[1];
+        if (extension == "png" || extension == "jpg" || extension == "jpeg") {
             cb(null, true);
         } else {
             cb(null, false);
@@ -138,26 +135,32 @@ imageRouter.get("/", authenticate.verifyUser, (req, res, next) => {
     deepfakeDB.findUser(userId, (user) => {
         if (user !== null) {
             deepfakeDB.findImage(imageId).then((image) => {
-                if (image !== null) {
-                    const v = user.images.filter((image) => image._id === imageId);
-                    if (v.length !== 0) {
-                        res.statusCode = 200;
-                        res.setHeader("Content-Type", "application/json");
-                        let file = path.parse(image.filePath);
-                        res.send({ code: 200, imageFile: file.base });
+                if (image.isFacePresent) {
+                    if (image !== null) {
+                        const v = user.images.filter((image) => image._id === imageId);
+                        if (v.length !== 0) {
+                            res.statusCode = 200;
+                            res.setHeader("Content-Type", "application/json");
+                            let file = path.parse(image.filePath);
+                            res.send({ code: 200, imageFile: file.base });
+                        } else {
+                            res.statusCode = 403;
+                            res.setHeader("Content-Type", "application/json");
+                            res.send({
+                                code: 403,
+                                message: "Image doesn't belong to user",
+                                success: false,
+                            });
+                        }
                     } else {
-                        res.statusCode = 403;
+                        res.statusCode = 404;
                         res.setHeader("Content-Type", "application/json");
-                        res.send({
-                            code: 403,
-                            message: "Image doesn't belong to user",
-                            success: false,
-                        });
+                        res.send({ code: 404, message: "Image not found", success: false });
                     }
                 } else {
-                    res.statusCode = 404;
+                    res.statusCode = 417;
                     res.setHeader("Content-Type", "application/json");
-                    res.send({ code: 404, message: "Image not found", success: false });
+                    res.send({ code: 417, message: "No face found in image", success: false });
                 }
             });
         } else {
