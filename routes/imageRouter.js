@@ -62,111 +62,176 @@ function getChecksum(path) {
     });
 }
 
-imageRouter.post("/", authenticate.verifyUser, upload.single("image"), (req, res, next) => {
-    if (req.file === undefined) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.send({ code: 400, message: `No image found` });
-    } else {
-        deepfakeDB.findLimitClassify(req.body.userId, (rate) => {
-            if (rate.remaining <= 0) {
-                res.statusCode = 429;
-                res.setHeader("Content-Type", "application/json");
-                res.send({ code: 429, message: "Rate limit exceeded" });
-            } else {
-                deepfakeDB.decClassifyRemaining(req.body.userId, () => {
-                    console.log("decrement done");
-                    res.statusCode = 200;
+imageRouter.post(
+    "/",
+    authenticate.verifyUser,
+    upload.single("image"),
+    (req, res, next) => {
+        console.log("req", req.body);
+        if (req.file === undefined) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.send({ code: 400, message: `No image found` });
+        } else {
+            deepfakeDB.findLimitGetImage(req.body.userId, (rate) => {
+                if (rate.remaining <= 0) {
+                    res.statusCode = 429;
                     res.setHeader("Content-Type", "application/json");
-                    res.send({
-                        code: 200,
-                        message: "Image is being processed",
-                    });
-                    getChecksum(req.file.path)
-                        .then((checksum) => {
-                            console.log("checksum", checksum);
-
-                            classifyImage(req.file.path)
-                                .then((result) => {
-                                    let data = {
-                                        fileName: actualFileName,
-                                        filePath: path.join("images", "results", fileName),
-                                        timeToProcess: result.time_to_process,
-                                        confidence: result.confidence,
-                                        isFacePresent: result.isFacePresent,
-                                        status: result.status,
-                                        checksum: checksum,
-                                        size: fs.statSync(req.file.path).size,
-                                    };
-
-                                    deepfakeDB.insert("images", data, (image) => {
-                                        let dd = {
-                                            _id: image._id,
-                                            feedback: "",
-                                            tweetId: "",
+                    res.send({ code: 429, message: "Rate limit exceeded" });
+                } else {
+                    deepfakeDB.decGetImage(req.body.userId, () => {
+                        console.log("decrement done");
+                        res.statusCode = 200;
+                        res.setHeader("Content-Type", "application/json");
+                        res.send({
+                            code: 200,
+                            message: "Image is being processed",
+                        });
+                        getChecksum(req.file.path)
+                            .then((checksum) => {
+                                console.log("checksum", checksum);
+                                classifyImage(req.file.path)
+                                    .then((result) => {
+                                        let data = {
+                                            fileName: actualFileName,
+                                            filePath: path.join(
+                                                "images",
+                                                "results",
+                                                fileName
+                                            ),
+                                            timeToProcess:
+                                                result.time_to_process,
+                                            confidence: result.confidence,
+                                            isFacePresent: result.isFacePresent,
+                                            status: result.status,
+                                            checksum: checksum,
+                                            size: fs.statSync(req.file.path)
+                                                .size,
                                         };
 
-                                        deepfakeDB.insertUserImage(req.body.userId, dd, (user) => {
-                                            console.log("image inserted in db ");
-                                            console.log(user);
-                                        });
-                                    });
-                                })
-                                .catch((err) => console.log(err));
-                        })
-                        .catch((err) => {
-                            res.statusCode = 500;
-                            res.setHeader("Content-Type", "application/json");
-                            res.send({
-                                code: 500,
-                                message: "Internal server error",
+                                        deepfakeDB.insert(
+                                            "images",
+                                            data,
+                                            (image) => {
+                                                let dd = {
+                                                    _id: image._id,
+                                                    feedback: "",
+                                                    tweetId: "",
+                                                };
+
+                                                deepfakeDB.insertUserImage(
+                                                    req.body.userId,
+                                                    dd,
+                                                    (user) => {
+                                                        console.log(
+                                                            "image inserted in db "
+                                                        );
+                                                        console.log(user);
+                                                    }
+                                                );
+                                            }
+                                        );
+                                    })
+                                    .catch((err) => console.log(err));
+                            })
+                            .catch((err) => {
+                                res.statusCode = 500;
+                                res.setHeader(
+                                    "Content-Type",
+                                    "application/json"
+                                );
+                                res.send({
+                                    code: 500,
+                                    message: "Internal server error",
+                                });
                             });
-                        });
-                });
-            }
-        });
+                    });
+                }
+            });
+        }
     }
-});
+);
 
 imageRouter.get("/", authenticate.verifyUser, (req, res, next) => {
     const userId = req.query.userId;
     const imageId = req.query.imageId;
 
-    deepfakeDB.findUser(userId, (user) => {
-        if (user !== null) {
-            deepfakeDB.findImage(imageId).then((image) => {
-                if (image.isFacePresent) {
-                    if (image !== null) {
-                        const v = user.images.filter((image) => image._id === imageId);
-                        if (v.length !== 0) {
-                            res.statusCode = 200;
-                            res.setHeader("Content-Type", "application/json");
-                            let file = path.parse(image.filePath);
-                            res.send({ code: 200, imageFile: file.base });
-                        } else {
-                            res.statusCode = 403;
-                            res.setHeader("Content-Type", "application/json");
-                            res.send({
-                                code: 403,
-                                message: "Image doesn't belong to user",
-                                success: false,
-                            });
-                        }
+    deepfakeDB.findLimitfetchImagePath(userId, (rate) => {
+        if (rate.remaining <= 0) {
+            res.statusCode = 429;
+            res.setHeader("Content-Type", "application/json");
+            res.send({ code: 429, message: "Rate limit exceeded" });
+        } else {
+            deepfakeDB.decfetchImagePath(userId, () => {
+                console.log("decrement done");
+                deepfakeDB.findUser(userId, (user) => {
+                    if (user !== null) {
+                        deepfakeDB.findImage(imageId).then((image) => {
+                            if (image.isFacePresent) {
+                                if (image !== null) {
+                                    const v = user.images.filter(
+                                        (image) => image._id === imageId
+                                    );
+                                    if (v.length !== 0) {
+                                        res.statusCode = 200;
+                                        res.setHeader(
+                                            "Content-Type",
+                                            "application/json"
+                                        );
+                                        let file = path.parse(image.filePath);
+                                        res.send({
+                                            code: 200,
+                                            imageFile: file.base,
+                                        });
+                                    } else {
+                                        res.statusCode = 403;
+                                        res.setHeader(
+                                            "Content-Type",
+                                            "application/json"
+                                        );
+                                        res.send({
+                                            code: 403,
+                                            message:
+                                                "Image doesn't belong to user",
+                                            success: false,
+                                        });
+                                    }
+                                } else {
+                                    res.statusCode = 404;
+                                    res.setHeader(
+                                        "Content-Type",
+                                        "application/json"
+                                    );
+                                    res.send({
+                                        code: 404,
+                                        message: "Image not found",
+                                        success: false,
+                                    });
+                                }
+                            } else {
+                                res.statusCode = 417;
+                                res.setHeader(
+                                    "Content-Type",
+                                    "application/json"
+                                );
+                                res.send({
+                                    code: 417,
+                                    message: "No face found in image",
+                                    success: false,
+                                });
+                            }
+                        });
                     } else {
                         res.statusCode = 404;
                         res.setHeader("Content-Type", "application/json");
-                        res.send({ code: 404, message: "Image not found", success: false });
+                        res.send({
+                            code: 404,
+                            message: "User not found",
+                            success: false,
+                        });
                     }
-                } else {
-                    res.statusCode = 417;
-                    res.setHeader("Content-Type", "application/json");
-                    res.send({ code: 417, message: "No face found in image", success: false });
-                }
+                });
             });
-        } else {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "application/json");
-            res.send({ code: 404, message: "User not found", success: false });
         }
     });
 });
@@ -180,7 +245,6 @@ imageRouter.get("/image", (req, res, next) => {
             success: false,
         });
     } else {
-        console.log("----");
         const filePath = path.join("images", "results", req.query.imageFile);
         res.statusCode = 200;
         let file = fs.createReadStream(filePath);
@@ -210,12 +274,14 @@ const classifyImage = (filePath) => {
     let promise = new Promise((resolve, reject) => {
         let start = performance.now();
         let modelPath = path.join("model", "full_raw.p");
-        exec(`${pythonExec} -W ignore predict.py -m ${modelPath} -i ${filePath} --cuda`)
+        exec(
+            `${pythonExec} -W ignore predict.py -m ${modelPath} -i ${filePath} --cuda`
+        )
             .then((value) => {
                 let end = performance.now();
                 let file = path.parse(filePath);
                 const resultFile = fs.readFileSync(
-                    path.join("images", "json", file.name + ".json"),
+                    path.join("images", "json", file.name + ".json")
                 );
                 const data = JSON.parse(resultFile.toString());
                 let imageResult = parseImageData(data);

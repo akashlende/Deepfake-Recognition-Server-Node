@@ -46,14 +46,6 @@ app.post("/api/search", serveTwitter.sendTweets);
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
-    deepfakeDB.insert(
-        "limits",
-        { fetchHistory: [], classify: [] },
-        (err, value) => {
-            if (err) console.log(err);
-            else console.log("Fresh Limits Created", value);
-        }
-    );
     job.schedule();
     setInterval(() => {
         // serveTwitter.listenForTweets();

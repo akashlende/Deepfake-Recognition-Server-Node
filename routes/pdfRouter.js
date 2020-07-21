@@ -10,48 +10,74 @@ const pdfRouter = express.Router();
 pdfRouter.use(bodyParser.json());
 
 pdfRouter.get("/", authenticate.verifyUser, (req, res, next) => {
-	const userId = req.query.userId;
-	const videoId = req.query.videoId;
-	deepfakeDB.findUser(userId, (user) => {
-		if (user !== null) {
-			deepfakeDB.findVideo(videoId).then((video) => {
-				if (video !== null) {
-					const v = user.videos.filter((video) => video._id === videoId);
-					if (v.length !== 0) {
-						const data = {
-							userId: user._id,
-							videoId: video._id,
-							status: video.status,
-							ratio: video.realToFakeRatio,
-							confidence: video.confidence,
-							duration: video.duration,
-							checksum: video.fileChecksum,
-							bitrate: video.bitrate,
-							size: video.fileSize,
-						};
-						pdfGenerator(data, (filePath) => {
-							res.statusCode = 200;
-							let file = path.parse(filePath.filename);
-							let fileName = file.base;
-							res.json({ report: fileName });
-						});
-					} else {
-						res.statusCode = 403;
-						res.setHeader("Content-Type", "application/json");
-						res.send({ code: 403, message: "Video doesn't belong to user" });
-					}
-				} else {
-					res.statusCode = 404;
-					res.setHeader("Content-Type", "application/json");
-					res.send({ code: 404, message: "Video not found" });
-				}
-			});
-		} else {
-			res.statusCode = 404;
-			res.setHeader("Content-Type", "application/json");
-			res.send({ code: 404, message: "User not found" });
-		}
-	});
+    const userId = req.query.userId;
+    const videoId = req.query.videoId;
+    deepfakeDB.findgetPdfVideo(userId, (rate) => {
+        if (rate.remaining <= 0) {
+            res.statusCode = 429;
+            res.setHeader("Content-Type", "application/json");
+            res.send({ code: 429, message: "Rate limit exceeded" });
+        } else {
+            deepfakeDB.decgetPdfVideo(userId, () => {
+                deepfakeDB.findUser(userId, (user) => {
+                    if (user !== null) {
+                        deepfakeDB.findVideo(videoId).then((video) => {
+                            if (video !== null) {
+                                const v = user.videos.filter(
+                                    (video) => video._id === videoId
+                                );
+                                if (v.length !== 0) {
+                                    const data = {
+                                        userId: user._id,
+                                        videoId: video._id,
+                                        status: video.status,
+                                        ratio: video.realToFakeRatio,
+                                        confidence: video.confidence,
+                                        duration: video.duration,
+                                        checksum: video.fileChecksum,
+                                        bitrate: video.bitrate,
+                                        size: video.fileSize,
+                                    };
+                                    pdfGenerator(data, (filePath) => {
+                                        res.statusCode = 200;
+                                        let file = path.parse(
+                                            filePath.filename
+                                        );
+                                        let fileName = file.base;
+                                        res.json({ report: fileName });
+                                    });
+                                } else {
+                                    res.statusCode = 403;
+                                    res.setHeader(
+                                        "Content-Type",
+                                        "application/json"
+                                    );
+                                    res.send({
+                                        code: 403,
+                                        message: "Video doesn't belong to user",
+                                    });
+                                }
+                            } else {
+                                res.statusCode = 404;
+                                res.setHeader(
+                                    "Content-Type",
+                                    "application/json"
+                                );
+                                res.send({
+                                    code: 404,
+                                    message: "Video not found",
+                                });
+                            }
+                        });
+                    } else {
+                        res.statusCode = 404;
+                        res.setHeader("Content-Type", "application/json");
+                        res.send({ code: 404, message: "User not found" });
+                    }
+                });
+            });
+        }
+    });
 });
 
 module.exports = pdfRouter;

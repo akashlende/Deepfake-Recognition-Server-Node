@@ -27,7 +27,8 @@ userRouter.post("/signup", (req, res) => {
             } else {
                 if (req.body.name) user.name = req.body.name;
                 if (req.body.email) user.email = req.body.email;
-                if (req.body.twitterUserId) user.twitterUserId = req.body.twitterUserId;
+                if (req.body.twitterUserId)
+                    user.twitterUserId = req.body.twitterUserId;
                 user.save((err, user) => {
                     if (err) {
                         res.statusCode = 500;
@@ -52,20 +53,101 @@ userRouter.post("/signup", (req, res) => {
                                         remaining: 10,
                                     },
                                     () => {
-                                        res.statusCode = 200;
-                                        res.setHeader("Content-Type", "application/json");
-                                        res.json({
-                                            status: "Registration Successful!",
-                                            success: true,
-                                        });
-                                    },
+                                        deepfakeDB.insert(
+                                            "limits-remove-video",
+                                            {
+                                                _id: user._id,
+                                                limit: 10,
+                                                remaining: 10,
+                                            },
+                                            () => {
+                                                deepfakeDB.insert(
+                                                    "limits-remove-image",
+                                                    {
+                                                        _id: user._id,
+                                                        limit: 10,
+                                                        remaining: 10,
+                                                    },
+                                                    () => {
+                                                        deepfakeDB.insert(
+                                                            "limits-get-image",
+                                                            {
+                                                                _id: user._id,
+                                                                limit: 10,
+                                                                remaining: 10,
+                                                            },
+                                                            () => {
+                                                                deepfakeDB.insert(
+                                                                    "fetch-image-path",
+                                                                    {
+                                                                        _id:
+                                                                            user._id,
+                                                                        limit: 10,
+                                                                        remaining: 10,
+                                                                    },
+
+                                                                    () => {
+                                                                        deepfakeDB.insert(
+                                                                            "fetch-video-path",
+                                                                            {
+                                                                                _id:
+                                                                                    user._id,
+                                                                                limit: 10,
+                                                                                remaining: 10,
+                                                                            },
+                                                                            () => {
+                                                                                deepfakeDB.insert(
+                                                                                    "get-pdf-video",
+                                                                                    {
+                                                                                        _id:
+                                                                                            user._id,
+                                                                                        limit: 10,
+                                                                                        remaining: 10,
+                                                                                    },
+                                                                                    () => {
+                                                                                        deepfakeDB.insert(
+                                                                                            "get-pdf-image",
+                                                                                            {
+                                                                                                _id:
+                                                                                                    user._id,
+                                                                                                limit: 10,
+                                                                                                remaining: 10,
+                                                                                            },
+                                                                                            () => {
+                                                                                                res.statusCode = 200;
+                                                                                                res.setHeader(
+                                                                                                    "Content-Type",
+                                                                                                    "application/json"
+                                                                                                );
+                                                                                                res.json(
+                                                                                                    {
+                                                                                                        status:
+                                                                                                            "Registration Successful!",
+                                                                                                        success: true,
+                                                                                                    }
+                                                                                                );
+                                                                                            }
+                                                                                        );
+                                                                                    }
+                                                                                );
+                                                                            }
+                                                                        );
+                                                                    }
+                                                                );
+                                                            }
+                                                        );
+                                                    }
+                                                );
+                                            }
+                                        );
+                                    }
                                 );
-                            },
+                            }
                         );
                     });
                 });
             }
-        },
+        }
     );
 });
 
