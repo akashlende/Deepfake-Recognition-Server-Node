@@ -6,7 +6,7 @@ const { performance } = require("perf_hooks");
 const download = require("download");
 const path = require("path");
 const FormData = require("form-data");
-const { flask_url } = require("../auth/config");
+const { classify_url } = require("../auth/config");
 
 const classify = (filePath) => {
 	let promise = new Promise((resolve, reject) => {
@@ -16,7 +16,7 @@ const classify = (filePath) => {
 		formData.append("video", fs.createReadStream(filePath));
 		axios({
 			method: "post",
-			url: `${flask_url}/video`,
+			url: `${classify_url}/video`,
 			headers: {
 				...formData.getHeaders(),
 			},
@@ -24,15 +24,14 @@ const classify = (filePath) => {
 		})
 			.then((res) => {
 				let end = performance.now();
-				response = JSON.parse(JSON.stringify(res.data));
-				let videoResult = response.data;
+				let videoResult = res.data;
 				videoResult.time_to_process = end - start;
 				let ext = path.extname(filePath);
 				ext = ext.split(".")[1];
 				let file = path.parse(filePath);
-				download(`${flask_url}/video?type=${ext}`).then((buffer) => {
+				download(`${classify_url}/video`).then((buffer) => {
 					fs.writeFileSync(
-						path.join("video-results", "video", file.name + "." + ext),
+						path.join("video-results", "video", file.name + ".avi"),
 						buffer
 					);
 					resolve(videoResult);

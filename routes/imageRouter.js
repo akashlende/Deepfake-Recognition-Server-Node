@@ -10,7 +10,7 @@ const { performance } = require("perf_hooks");
 const util = require("util");
 const FormData = require("form-data");
 const download = require("download");
-const { flask_url } = require("../auth/config");
+const { classify_url } = require("../auth/config");
 const fs = require("fs");
 const crypto = require("crypto");
 
@@ -253,7 +253,7 @@ const classifyImage = (filePath) => {
 		formData.append("image", fs.createReadStream(filePath));
 		axios({
 			method: "post",
-			url: `${flask_url}/image`,
+			url: `${classify_url}/image`,
 			headers: {
 				...formData.getHeaders(),
 			},
@@ -267,7 +267,7 @@ const classifyImage = (filePath) => {
 				let ext = path.extname(filePath);
 				ext = ext.split(".")[1];
 				let file = path.parse(filePath);
-				download(`${flask_url}/image?type=${ext}`).then((buffer) => {
+				download(`${classify_url}/image?type=${ext}`).then((buffer) => {
 					fs.writeFileSync(
 						path.join("images", "results", file.name + "." + ext),
 						buffer
