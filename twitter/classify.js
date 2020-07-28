@@ -3,19 +3,19 @@ const URL = require("url").URL;
 const uniqueFilename = require("unique-filename");
 const axios = require("axios");
 const { performance } = require("perf_hooks");
-const util = require("util");
-const exec = util.promisify(require("child_process").exec);
+const download = require("download");
 const path = require("path");
+const FormData = require("form-data");
+const { classify_url } = require("../auth/config");
 const ffmpeg = require("fluent-ffmpeg");
 const deepfakeDB = require("../database/DeepfakeDB");
-
-const pythonExec = "python";
 
 const classify = (filePath) => {
     let promise = new Promise((resolve, reject) => {
         let start = performance.now();
-        let modelPath = path.join("model", "full_raw.p");
-        let file = path.parse(filePath);
+        const formData = new FormData();
+        console.log(filePath);
+
         ffmpeg.ffprobe(filePath, (err, metadata) => {
             if (!err) {
                 let isAudioCodecPresent =
@@ -31,19 +31,31 @@ const classify = (filePath) => {
             }
         });
 
-        exec(
-            `${pythonExec} -W ignore predict.py -m ${modelPath} -i ${filePath} --dev`
-        ).then((value) => {
-            let end = performance.now();
-
-            const resultFile = fs.readFileSync(
-                path.join("video-results", "json", file.name + ".json")
-            );
-            const data = JSON.parse(resultFile.toString());
-            let videoResult = parseModelOutput(data);
-            videoResult.time_to_process = end - start;
-            resolve(videoResult);
-        });
+        formData.append("video", fs.createReadStream(filePath));
+        axios({
+            method: "post",
+            url: `${classify_url}/video`,
+            headers: {
+                ...formData.getHeaders(),
+            },
+            data: formData,
+        })
+            .then((res) => {
+                let end = performance.now();
+                let videoResult = res.data;
+                videoResult.time_to_process = end - start;
+                let ext = path.extname(filePath);
+                ext = ext.split(".")[1];
+                let file = path.parse(filePath);
+                download(`${classify_url}/video`).then((buffer) => {
+                    fs.writeFileSync(
+                        path.join("video-results", "video", file.name + ".mp4"),
+                        buffer
+                    );
+                    resolve(videoResult);
+                });
+            })
+            .catch((err) => reject(err));
     });
     return promise;
 };
@@ -110,32 +122,6 @@ const downloadVideo = function (tweet) {
         });
     });
     return promise;
-};
-
-const parseModelOutput = (data) => {
-    const frames = data.frames;
-    const fps = data.fps;
-    let realCount = 0;
-    let fakeCount = 0;
-    frames.forEach((frame) => {
-        if (frame == 0) realCount += 1;
-        else fakeCount += 1;
-    });
-
-    const realPercent = Math.round((realCount / frames.length) * 100);
-    const fakePercent = Math.round((fakeCount / frames.length) * 100);
-    const majority = realCount >= fakeCount ? "REAL" : "FAKE";
-
-    // TODO: Retrieve timestamps
-    // TODO: Retrieve confidence scores
-    return {
-        frameCount: frames.length,
-        realPercent: realPercent,
-        fakePercent: fakePercent,
-        majority: majority,
-        confidence: 0.81,
-        fps: fps,
-    };
 };
 
 module.exports = { downloadVideo, classify };
