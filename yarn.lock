@@ -781,6 +781,13 @@ fetch@^1.1.0:
     biskviit "1.0.1"
     encoding "0.1.12"
 
+ffmpeg-extract-audio@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/ffmpeg-extract-audio/-/ffmpeg-extract-audio-1.0.2.tgz#7b0b14adb704fb0093153d83f301c57987cde4b4"
+  integrity sha1-ewsUrbcE+wCTFT2D8wHFeYfN5LQ=
+  dependencies:
+    fluent-ffmpeg "^2.1.2"
+
 fill-range@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-7.0.1.tgz#1919a6a7c75fe38b2c7c77e5198535da9acdda40"

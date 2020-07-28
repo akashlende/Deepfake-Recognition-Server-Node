@@ -6,6 +6,8 @@ const { performance } = require("perf_hooks");
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 const path = require("path");
+const ffmpeg = require("fluent-ffmpeg");
+const deepfakeDB = require("../database/DeepfakeDB");
 
 const pythonExec = "python";
 
@@ -13,24 +15,56 @@ const classify = (filePath) => {
     let promise = new Promise((resolve, reject) => {
         let start = performance.now();
         let modelPath = path.join("model", "full_raw.p");
+        let file = path.parse(filePath);
+        ffmpeg.ffprobe(filePath, (err, metadata) => {
+            if (!err) {
+                let isAudioCodecPresent =
+                    metadata.streams.filter(
+                        (stream) => stream.codec_type == "audio"
+                    ).length > 0;
+
+                if (isAudioCodecPresent) {
+                    extractAudio(filePath);
+                } else {
+                    console.log("no audio file found");
+                }
+            }
+        });
+
         exec(
-            `${pythonExec} -W ignore predict.py -m ${modelPath} -i ${filePath} --cuda`
-        )
-            .then((value) => {
-                let end = performance.now();
-                let file = path.parse(filePath);
-                const resultFile = fs.readFileSync(
-                    path.join("video-results", "json", file.name + ".json")
-                );
-                const data = JSON.parse(resultFile.toString());
-                let videoResult = parseModelOutput(data);
-                videoResult.time_to_process = end - start;
-                resolve(videoResult);
-            })
-            .catch((err) => reject(err));
+            `${pythonExec} -W ignore predict.py -m ${modelPath} -i ${filePath} --dev`
+        ).then((value) => {
+            let end = performance.now();
+
+            const resultFile = fs.readFileSync(
+                path.join("video-results", "json", file.name + ".json")
+            );
+            const data = JSON.parse(resultFile.toString());
+            let videoResult = parseModelOutput(data);
+            videoResult.time_to_process = end - start;
+            resolve(videoResult);
+        });
     });
     return promise;
 };
+
+function extractAudio(filePath, callback) {
+    let file = path.parse(filePath);
+    let audioPath = path.join(
+        "audio-cache",
+        "audio",
+        "audio-" + file.name.split("-")[1]
+    );
+    return new Promise((resolve, reject) => {
+        exec(
+            `ffmpeg -i ${filePath} -ab 160k -ac 2 -ar 44100 -vn ${
+                audioPath + ".wav"
+            }`
+        ).then(() => {
+            resolve();
+        });
+    });
+}
 
 async function getVideo(url, path) {
     const writer = fs.createWriteStream(path);

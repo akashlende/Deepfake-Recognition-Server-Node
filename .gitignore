@@ -14,3 +14,6 @@ __pycache__
 twitter/pdf-cache/*
 auth/config.js
 pdf-cache/*.pdf
+*.flac
+*.mp3
+*.wav
