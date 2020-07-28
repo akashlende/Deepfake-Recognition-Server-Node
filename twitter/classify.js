@@ -31,7 +31,7 @@ const classify = (filePath) => {
 				let file = path.parse(filePath);
 				download(`${classify_url}/video`).then((buffer) => {
 					fs.writeFileSync(
-						path.join("video-results", "video", file.name + ".avi"),
+						path.join("video-results", "video", file.name + ".mp4"),
 						buffer
 					);
 					resolve(videoResult);
