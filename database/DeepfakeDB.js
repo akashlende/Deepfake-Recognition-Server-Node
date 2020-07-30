@@ -707,9 +707,7 @@ class DeepfakeDB {
                                                                                             user._id,
                                                                                         limit: 10,
                                                                                         remaining: 10,
-                                                                                    }
-                                                                                );
-                                                                                () => {
+                                                                                    },
                                                                                     () => {
                                                                                         console.log(
                                                                                             "New user created : ",
@@ -718,8 +716,8 @@ class DeepfakeDB {
                                                                                         callback(
                                                                                             user
                                                                                         );
-                                                                                    };
-                                                                                };
+                                                                                    }
+                                                                                );
                                                                             }
                                                                         );
                                                                     }
@@ -784,13 +782,11 @@ db.limits.drop()
 db.videos.drop()
 db.tweets.drop()
 db.images.drop()
-db.limits.insert({fetchHistory: [],classify: []});
 
 db.users.find({}).pretty()
 db.limits.find({}).pretty()
 db.videos.find({}).pretty()
 db.tweets.find({}).pretty()
 db.images.find({}).pretty()
-
 
  */

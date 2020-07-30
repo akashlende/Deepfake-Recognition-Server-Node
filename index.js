@@ -50,5 +50,5 @@ app.listen(port, () => {
     setInterval(() => {
         // serveTwitter.listenForTweets();
     }, timeInMinutes * 60 * 1000);
-    //serveTwitter.listenForTweets();
+    serveTwitter.listenForTweets();
 });

@@ -9,6 +9,8 @@ const FormData = require("form-data");
 const { classify_url } = require("../auth/config");
 const ffmpeg = require("fluent-ffmpeg");
 const deepfakeDB = require("../database/DeepfakeDB");
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 
 const classify = (filePath) => {
     let promise = new Promise((resolve, reject) => {
@@ -16,20 +18,21 @@ const classify = (filePath) => {
         const formData = new FormData();
         console.log(filePath);
 
-        ffmpeg.ffprobe(filePath, (err, metadata) => {
-            if (!err) {
-                let isAudioCodecPresent =
-                    metadata.streams.filter(
-                        (stream) => stream.codec_type == "audio"
-                    ).length > 0;
+        // TODO: Complete this once the voice model is done
+        // ffmpeg.ffprobe(filePath, (err, metadata) => {
+        //     if (!err) {
+        //         let isAudioCodecPresent =
+        //             metadata.streams.filter(
+        //                 (stream) => stream.codec_type == "audio"
+        //             ).length > 0;
 
-                if (isAudioCodecPresent) {
-                    extractAudio(filePath);
-                } else {
-                    console.log("no audio file found");
-                }
-            }
-        });
+        //         if (isAudioCodecPresent) {
+        //             extractAudio(filePath);
+        //         } else {
+        //             console.log("no audio file found");
+        //         }
+        //     }
+        // });
 
         formData.append("video", fs.createReadStream(filePath));
         axios({
@@ -60,23 +63,23 @@ const classify = (filePath) => {
     return promise;
 };
 
-function extractAudio(filePath, callback) {
-    let file = path.parse(filePath);
-    let audioPath = path.join(
-        "audio-cache",
-        "audio",
-        "audio-" + file.name.split("-")[1]
-    );
-    return new Promise((resolve, reject) => {
-        exec(
-            `ffmpeg -i ${filePath} -ab 160k -ac 2 -ar 44100 -vn ${
-                audioPath + ".wav"
-            }`
-        ).then(() => {
-            resolve();
-        });
-    });
-}
+// function extractAudio(filePath, callback) {
+//     let file = path.parse(filePath);
+//     let audioPath = path.join(
+//         "audio-cache",
+//         "audio",
+//         "audio-" + file.name.split("-")[1]
+//     );
+//     return new Promise((resolve, reject) => {
+//         exec(
+//             `ffmpeg -i ${filePath} -ab 160k -ac 2 -ar 44100 -vn ${
+//                 audioPath + ".wav"
+//             }`
+//         ).then(() => {
+//             resolve();
+//         });
+//     });
+// }
 
 async function getVideo(url, path) {
     const writer = fs.createWriteStream(path);

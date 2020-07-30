@@ -836,6 +836,11 @@ eventemitter3@~4.0.0:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.4.tgz#b5463ace635a083d018bdc7c917b4c5f10a85384"
   integrity sha512-rlaVLnVxtxvoyLsQQFBx53YmXHDxRIzzTLbdfxqi4yocpSjAxXwkU0cScM5JgSKMqEhrZpnvQ2D9gjylR0AimQ==
 
+exec@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/exec/-/exec-0.2.1.tgz#2661f0bfc5532918629117cb9f80c7564af2c51f"
+  integrity sha1-JmHwv8VTKRhikRfLn4DHVkryxR8=
+
 express@^4.17.1:
   version "4.17.1"
   resolved "https://registry.yarnpkg.com/express/-/express-4.17.1.tgz#4491fc38605cf51f8629d39c2b5d026f98a4c134"
@@ -946,6 +951,13 @@ fetch@^1.1.0:
   dependencies:
     biskviit "1.0.1"
     encoding "0.1.12"
+
+ffmpeg-extract-audio@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/ffmpeg-extract-audio/-/ffmpeg-extract-audio-1.0.2.tgz#7b0b14adb704fb0093153d83f301c57987cde4b4"
+  integrity sha1-ewsUrbcE+wCTFT2D8wHFeYfN5LQ=
+  dependencies:
+    fluent-ffmpeg "^2.1.2"
 
 file-type@^11.1.0:
   version "11.1.0"
