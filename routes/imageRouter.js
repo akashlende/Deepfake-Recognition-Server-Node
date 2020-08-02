@@ -3,24 +3,23 @@ const bodyParser = require("body-parser");
 const authenticate = require("../auth/authenticate");
 const path = require("path");
 const multer = require("multer");
-const axios = require("axios");
 const uniqueFilename = require("unique-filename");
 const deepfakeDB = require("../database/DeepfakeDB");
 const { performance } = require("perf_hooks");
-const util = require("util");
-const FormData = require("form-data");
-const download = require("download");
-const { classify_url } = require("../auth/config");
 const fs = require("fs");
 const crypto = require("crypto");
+const csv = require("csv-parse");
+const videoShow = require("videoshow")
+const sizeOf = require('image-size');
+const extractFrames = require('ffmpeg-extract-frames')
+const util = require("util")
+const exec = util.promisify(require("child_process").exec);
 
 const imageRouter = express.Router();
 
-const pythonExec = "python";
-
 imageRouter.use(bodyParser.json());
 
-const DIR = path.join("images", "cache");
+const DIR = path.join("image-cache", "input");
 
 let actualFileName = "";
 let fileName = "";
@@ -96,8 +95,8 @@ imageRouter.post(
 									.then((result) => {
 										let data = {
 											fileName: actualFileName,
-											filePath: path.join(__dirname, "..", "images", "results", fileName),
-											// timeToProcess: result.time_to_process,
+											filePath: path.join(__dirname, "..", "image-cache", "result", fileName),
+											timeToProcess: result.time_to_process,
 											confidence: result.confidence,
 											isFacePresent: result.faces_present,
 											status: result.majority,
@@ -245,36 +244,85 @@ imageRouter.get("/image", (req, res, next) => {
 });
 
 const classifyImage = (filePath) => {
+	const file = path.parse(filePath)
 	let promise = new Promise((resolve, reject) => {
 		let start = performance.now();
-		const formData = new FormData();
-		console.log(filePath);
-		formData.append("image", fs.createReadStream(filePath));
-		axios({
-			method: "post",
-			url: `${classify_url}/image`,
-			headers: {
-				...formData.getHeaders(),
-			},
-			data: formData,
-		})
-			.then((res) => {
-				let end = performance.now();
-				response = JSON.parse(JSON.stringify(res.data));
-				let imageResult = response.data;
-				// imageResult.time_to_process = 0;
-				let ext = path.extname(filePath);
-				ext = ext.split(".")[1];
-				let file = path.parse(filePath);
-				download(`${classify_url}/image?imageName=${file.name}.${ext}`).then((buffer) => {
-					fs.writeFileSync(
-						path.join("images", "results", file.name + "." + ext),
-						buffer
-					);
-					resolve(imageResult);
-				});
-			})
-			.catch((err) => reject(err));
+		sizeOf(filePath, function (err, dimensions) {
+			console.log(dimensions.width, dimensions.height);
+			let images = [filePath]
+			var videoOptions = {
+				fps: 1,
+				transition: false,
+				videoBitrate: 1024,
+				videoCodec: 'libx264',
+				size: `${dimensions.width}x${dimensions.height}`,
+				loop: 1,
+				audioBitrate: '128k',
+				audioChannels: 1,
+				format: 'mp4',
+				pixelFormat: 'yuv420p',
+			}
+
+			videoShow(images, videoOptions)
+				.save(file.name + '.mp4')
+				.on('start', function (command) {
+					console.log('ffmpeg process started:', command)
+				})
+				.on('error', function (err, stdout, stderr) {
+					console.error('Error:', err)
+					console.error('ffmpeg stderr:', stderr)
+				})
+				.on('end', function (output) {
+					extractFrames({
+						input: file.name + '.mp4',
+						output: file.name + '.jpg',
+					}).then((filePath) => {
+						let fake_confidence = 0, real_confidence = 0, faces_present, majority, confidence;
+						const parser = csv({ delimiter: "," }, (err, data) => {
+							faces_present = parseInt(data[1][2])
+							if (faces_present) {
+								fake_confidence = parseFloat(data[1][1]);
+								real_confidence = 1.0 - fake_confidence;
+								majority = fake_confidence > 0.5 ? "FAKE" : "REAL";
+								confidence = majority === "REAL" ? real_confidence : fake_confidence;
+							} else {
+								majority = "NO FACES";
+								confidence = 0;
+							}
+
+							let response = {
+								majority,
+								confidence,
+								faces_present
+							};
+							let end = performance.now();
+							response.time_to_process = end - start
+
+							console.log(response)
+
+							resolve(response)
+						});
+
+						exec(
+							`python -W ignore predict_folder.py \
+--weights-dir weights/ \
+--img ${filePath} \
+--output image.csv \
+--models final_111_DeepFakeClassifier_tf_efficientnet_b7_ns_0_36`,
+							(err, stdout, stderr) => {
+								console.log(stdout);
+								fs.createReadStream("./image.csv").pipe(parser);
+							},
+							(err, stdout, stderr) => {
+								console.log("err: ", err);
+								console.log("stdout: ", stdout);
+								console.log("stderr: ", stderr);
+							}
+						);
+					})
+				})
+		});
+
 	});
 	return promise;
 };

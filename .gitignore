@@ -15,4 +15,5 @@ twitter/pdf-cache/*
 pdf-cache/*
 *.flac
 *.mp3
+weights
 *.wav

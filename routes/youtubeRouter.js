@@ -1,6 +1,4 @@
 const express = require("express");
-const classify = require("../twitter/classify").classify;
-const deepfakeDB = require("../database/DeepfakeDB");
 const ytdl = require("ytdl-core");
 const uniqueFilename = require("unique-filename");
 const authenticate = require("../auth/authenticate");
@@ -9,7 +7,6 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const Axios = require("axios");
 const FormData = require("form-data");
-const { classify_url } = require("../auth/config");
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 
 const youtubeRouter = express.Router();
@@ -17,7 +14,7 @@ youtubeRouter.use(bodyParser.json());
 
 youtubeRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 	const URL = req.body.youtubeLink;
-	const uniqueFileName = uniqueFilename("", "video");
+	const uniqueFileName = uniqueFilename("", "video-youtube");
 	const videoPath = path.join(
 		__dirname,
 		"..",
@@ -30,7 +27,7 @@ youtubeRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 		format: "mp4",
 		quality: "18",
 	}).pipe(videoStream);
-	const data = new FormData();
+	const data = new FormData()
 	data.append("userId", req.body.userId);
 	data.append("video", fs.createReadStream(videoPath));
 	const config = {
@@ -44,7 +41,7 @@ youtubeRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 	};
 	Axios(config).then((response) => {
 		res.json(response.data);
-		fs.unlink(videoPath);
+		// fs.unlink(videoPath);
 	});
 });
 
