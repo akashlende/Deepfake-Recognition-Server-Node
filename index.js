@@ -23,14 +23,14 @@ const classifyRouter = require("./routes/classifyRouter");
 const userRouter = require("./routes/userRouter");
 const videoRouter = require("./routes/videoRouter");
 const imagePdfRouter = require("./routes/imagePdfRouter");
+const youtubeRouter = require("./routes/youtubeRouter");
 
 const deepfakeDB = require("./database/DeepfakeDB");
 const imageRouter = require("./routes/imageRouter");
 
 const app = express();
-// app.get("/.well-known/pki-validation/DCCE6506425187ECC9C3D866C39F8F42.txt", (req, res, next) => {
-//     res.sendFile(path.join(__dirname, "DCCE6506425187ECC9C3D866C39F8F42.txt"));
-// });
+
+let runHTTPS = true;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -49,20 +49,36 @@ app.use("/pdf-image", imagePdfRouter);
 app.use("/fetch-history", fetchHistory);
 app.use("/classify", classifyRouter);
 app.use("/get-image", imageRouter);
+app.use("/youtube", youtubeRouter);
 
 app.post("/api/search", serveTwitter.sendTweets);
 
-const httpsServer = https.createServer({
-    key: fs.readFileSync('./ssl/privkey.pem'),
-    cert: fs.readFileSync('./ssl/fullchain.pem'),
-}, app)
+if (runHTTPS) {
+	const httpsServer = https.createServer(
+		{
+			key: fs.readFileSync("./ssl/privkey.pem"),
+			cert: fs.readFileSync("./ssl/fullchain.pem"),
+		},
+		app
+	);
 
-httpsServer.listen(443, () => {
-    console.log('HTTPS Server running on port 443');
-    // console.log(`Listening on port ${port}`);
-    job.schedule();
-    setInterval(() => {
-        // serveTwitter.listenForTweets();
-    }, timeInMinutes * 60 * 1000);
-    // serveTwitter.listenForTweets();
-});
+	httpsServer.listen(443, () => {
+		console.log("HTTPS Server running on port 443");
+		// console.log(`Listening on port ${port}`);
+		job.schedule();
+		setInterval(() => {
+			// serveTwitter.listenForTweets();
+		}, timeInMinutes * 60 * 1000);
+		// serveTwitter.listenForTweets();
+	});
+} else {
+	app.listen(port, () => {
+		console.log(`Server running on port ${port}`);
+		// console.log(`Listening on port ${port}`);
+		job.schedule();
+		setInterval(() => {
+			// serveTwitter.listenForTweets();
+		}, timeInMinutes * 60 * 1000);
+		// serveTwitter.listenForTweets();
+	});
+}

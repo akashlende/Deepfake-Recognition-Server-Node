@@ -1311,6 +1311,11 @@ hasha@^2.2.0:
     is-stream "^1.0.1"
     pinkie-promise "^2.0.0"
 
+html-entities@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-1.3.1.tgz#fb9a1a4b5b14c5daba82d3e34c6ae4fe701a0e44"
+  integrity sha512-rhE/4Z3hIhzHAUKbW8jVcCyuT5oJCXXqhN/6mXXVCpzTmvJnoH2HL/bt3EZ6p55jbFJBeAe1ZNpL5BugLujxNA==
+
 html-pdf@^2.2.0:
   version "2.2.0"
   resolved "https://registry.npm.taobao.org/html-pdf/download/html-pdf-2.2.0.tgz#4bcf91c24cb560e47aa3facfd033e0e1bf241b91"
@@ -1756,6 +1761,14 @@ lru-cache@2:
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-2.7.3.tgz#6d4524e8b955f95d4f5b58851ce21dd72fb4e952"
   integrity sha1-bUUk6LlV+V1PW1iFHOId1y+06VI=
 
+m3u8stream@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/m3u8stream/-/m3u8stream-0.7.1.tgz#74b01a67ca248ac7bbdc263a65d9d8d2c479a65c"
+  integrity sha512-z6ldnAdhbuWOL6LmMkwptSZGzj+qbRytMKLTbNicwF/bJMjf9U9lqD57RNQUFecvWadEkzy6PDjcNJFFgi19uQ==
+  dependencies:
+    miniget "^1.6.1"
+    sax "^1.2.4"
+
 make-dir@^1.0.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.3.0.tgz#79c1033b80515bd6d24ec9933e860ca75ee27f0c"
@@ -1819,6 +1832,16 @@ mimic-response@^1.0.0, mimic-response@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-1.0.1.tgz#4923538878eef42063cb8a3e3b0798781487ab1b"
   integrity sha512-j5EctnkH7amfV/q5Hgmoal1g2QHFJRraOtmx0JpIqkxhBhI/lJSl1nMpQ45hVarwNETOoWEimndZ4QK0RHxuxQ==
+
+miniget@^1.6.1:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/miniget/-/miniget-1.7.2.tgz#f95eff50b78d798dddee2460c4aa3c72db1aa23a"
+  integrity sha512-USPNNK2bnHLOplX8BZVMehUkyQizS/DFpBdoH0TS+fM+hQoLNg9tWg4MeY9wE8gfY0pbzmx5UBEODujt3Lz8AA==
+
+miniget@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/miniget/-/miniget-2.0.1.tgz#e2188573317ad8239bab33f056aae64804fc8e47"
+  integrity sha512-MX+QfVIPAutz6c+T7WKuFKtjcw0nOyRRh1ubhTDD+z/e/pKcSAsfAV63aQKUgb1MFRT1GyfJeW53N5fHkX0wIA==
 
 minimatch@0.3:
   version "0.3.0"
@@ -2522,7 +2545,7 @@ saslprep@^1.0.0:
   dependencies:
     sparse-bitfield "^3.0.3"
 
-sax@>=0.6.0:
+sax@>=0.6.0, sax@^1.1.3, sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
   integrity sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
@@ -3168,3 +3191,13 @@ yauzl@^2.10.0, yauzl@^2.4.2:
   dependencies:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.1.0"
+
+ytdl-core@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/ytdl-core/-/ytdl-core-3.2.0.tgz#933dfdc2e325ab6baedc05596ca2fa352a51d4e2"
+  integrity sha512-lzMT3Fp3GplNGVTD8c1eDmoSgqfG9icL+zw23hUdTpHbyOjHcaL5qa54qP7YqGj2NCOjJnoKqxr6Quh5dlEz6Q==
+  dependencies:
+    html-entities "^1.3.1"
+    m3u8stream "^0.7.1"
+    miniget "^2.0.1"
+    sax "^1.1.3"
