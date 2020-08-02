@@ -1,0 +1,12 @@
+mkdir video-cache
+mkdir video-results
+cd video-results
+mkdir json
+mkdir video
+cd ..
+mkdir pdf-cache
+mkdir images
+cd images
+mkdir json
+mkdir video
+mkdir results

@@ -6,7 +6,7 @@ const path = require("path");
 const TimeBeforeDeleteInHours = 24;
 
 class Job {
-    constructor() {}
+    constructor() { }
 
     deleteFiles(dir) {
         dir += "/";
@@ -23,7 +23,7 @@ class Job {
                     .filter(
                         (file) =>
                             file.time <
-                            Date.now() - TimeBeforeDeleteInHours * 1000
+                            Date.now() - TimeBeforeDeleteInHours * 60 * 60 * 1000
                     );
 
                 files.forEach((file) => {

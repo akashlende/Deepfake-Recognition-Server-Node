@@ -70,7 +70,6 @@ imageRouter.post(
 	authenticate.verifyUser,
 	upload.single("image"),
 	(req, res, next) => {
-		console.log("req", req.body);
 		if (req.file === undefined) {
 			res.statusCode = 400;
 			res.setHeader("Content-Type", "application/json");
@@ -97,8 +96,8 @@ imageRouter.post(
 									.then((result) => {
 										let data = {
 											fileName: actualFileName,
-											filePath: path.join("images", "results", fileName),
-											timeToProcess: result.time_to_process,
+											filePath: path.join(__dirname, "..", "images", "results", fileName),
+											// timeToProcess: result.time_to_process,
 											confidence: result.confidence,
 											isFacePresent: result.faces_present,
 											status: result.majority,
@@ -263,11 +262,11 @@ const classifyImage = (filePath) => {
 				let end = performance.now();
 				response = JSON.parse(JSON.stringify(res.data));
 				let imageResult = response.data;
-				imageResult.time_to_process = end - start;
+				// imageResult.time_to_process = 0;
 				let ext = path.extname(filePath);
 				ext = ext.split(".")[1];
 				let file = path.parse(filePath);
-				download(`${classify_url}/image?type=${ext}`).then((buffer) => {
+				download(`${classify_url}/image?imageName=${file.name}.${ext}`).then((buffer) => {
 					fs.writeFileSync(
 						path.join("images", "results", file.name + "." + ext),
 						buffer

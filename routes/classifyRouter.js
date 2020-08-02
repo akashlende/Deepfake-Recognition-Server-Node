@@ -64,7 +64,14 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 				});
 			}
 		} else if (err) {
-			// Errors unrelated to multer occurred when uploading are handled here.
+			res.statusCode = 500;
+			res.setHeader("Content-Type", "application/json");
+			res.send({
+				code: 500,
+				message: `Unknown server error`,
+				error: err,
+				field: err.field,
+			});
 		} else {
 			if (req.file === undefined) {
 				res.statusCode = 400;
@@ -120,7 +127,7 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 													message:
 														`Total frames in video should not exceed ` +
 														`${
-															60 * MaxPlaybackTimeInMins * MaxFPSAllowed
+														60 * MaxPlaybackTimeInMins * MaxFPSAllowed
 														} minutes`,
 												});
 												errFlag = true;

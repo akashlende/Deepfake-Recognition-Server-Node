@@ -13,54 +13,38 @@ const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
 const classify = (filePath) => {
-    let promise = new Promise((resolve, reject) => {
-        let start = performance.now();
-        const formData = new FormData();
-        console.log(filePath);
+	let promise = new Promise((resolve, reject) => {
+		let start = performance.now();
+		const formData = new FormData();
+		console.log(filePath);
 
-        // TODO: Complete this once the voice model is done
-        // ffmpeg.ffprobe(filePath, (err, metadata) => {
-        //     if (!err) {
-        //         let isAudioCodecPresent =
-        //             metadata.streams.filter(
-        //                 (stream) => stream.codec_type == "audio"
-        //             ).length > 0;
-
-        //         if (isAudioCodecPresent) {
-        //             extractAudio(filePath);
-        //         } else {
-        //             console.log("no audio file found");
-        //         }
-        //     }
-        // });
-
-        formData.append("video", fs.createReadStream(filePath));
-        axios({
-            method: "post",
-            url: `${classify_url}/video`,
-            headers: {
-                ...formData.getHeaders(),
-            },
-            data: formData,
-        })
-            .then((res) => {
-                let end = performance.now();
-                let videoResult = res.data;
-                videoResult.time_to_process = end - start;
-                let ext = path.extname(filePath);
-                ext = ext.split(".")[1];
-                let file = path.parse(filePath);
-                download(`${classify_url}/video`).then((buffer) => {
-                    fs.writeFileSync(
-                        path.join("video-results", "video", file.name + ".mp4"),
-                        buffer
-                    );
-                    resolve(videoResult);
-                });
-            })
-            .catch((err) => reject(err));
-    });
-    return promise;
+		formData.append("video", fs.createReadStream(filePath));
+		axios({
+			method: "post",
+			url: `${classify_url}/video`,
+			headers: {
+				...formData.getHeaders(),
+			},
+			data: formData,
+		})
+			.then((res) => {
+				let end = performance.now();
+				let videoResult = res.data;
+				videoResult.time_to_process = end - start;
+				let ext = path.extname(filePath);
+				ext = ext.split(".")[1];
+				let file = path.parse(filePath);
+				download(`${classify_url}/video?videoName=${file.name}.mp4`).then((buffer) => {
+					fs.writeFileSync(
+						path.join("video-results", "video", file.name + ".mp4"),
+						buffer
+					);
+					resolve(videoResult);
+				});
+			})
+			.catch((err) => reject(err));
+	});
+	return promise;
 };
 
 // function extractAudio(filePath, callback) {
@@ -82,49 +66,49 @@ const classify = (filePath) => {
 // }
 
 async function getVideo(url, path) {
-    const writer = fs.createWriteStream(path);
+	const writer = fs.createWriteStream(path);
 
-    const response = await axios({
-        url,
-        method: "GET",
-        responseType: "stream",
-    });
+	const response = await axios({
+		url,
+		method: "GET",
+		responseType: "stream",
+	});
 
-    response.data.pipe(writer);
+	response.data.pipe(writer);
 
-    return new Promise((resolve, reject) => {
-        writer.on("finish", resolve);
-        writer.on("error", reject);
-    });
+	return new Promise((resolve, reject) => {
+		writer.on("finish", resolve);
+		writer.on("error", reject);
+	});
 }
 
 const downloadVideo = function (tweet) {
-    let promise = new Promise((resolve, reject) => {
-        let url = new URL(tweet.url);
+	let promise = new Promise((resolve, reject) => {
+		let url = new URL(tweet.url);
 
-        const uniqueFileName = uniqueFilename("video-cache", "video");
+		const uniqueFileName = uniqueFilename("video-cache", "video");
 
-        let file = { path: uniqueFileName + ".mp4" };
+		let file = { path: uniqueFileName + ".mp4" };
 
-        console.log("File created:", file.path);
+		console.log("File created:", file.path);
 
-        getVideo(url.toString(), uniqueFileName + ".mp4").then(() => {
-            let start = performance.now();
-            classify(file.path)
-                .then((videoResult) => {
-                    let end = performance.now();
-                    const time_taken = end - start;
-                    resolve({
-                        filePath: file.path,
-                        time_to_process: time_taken,
-                        processed_tweet: tweet,
-                        video_result: videoResult,
-                    });
-                })
-                .catch((err) => reject(err));
-        });
-    });
-    return promise;
+		getVideo(url.toString(), uniqueFileName + ".mp4").then(() => {
+			let start = performance.now();
+			classify(file.path)
+				.then((videoResult) => {
+					let end = performance.now();
+					const time_taken = end - start;
+					resolve({
+						filePath: file.path,
+						time_to_process: time_taken,
+						processed_tweet: tweet,
+						video_result: videoResult,
+					});
+				})
+				.catch((err) => reject(err));
+		});
+	});
+	return promise;
 };
 
 module.exports = { downloadVideo, classify };

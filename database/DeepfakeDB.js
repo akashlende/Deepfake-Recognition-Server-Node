@@ -639,38 +639,38 @@ class DeepfakeDB {
             if (n === true) {
                 this.insert(
                     "limits-classify",
-                    { _id: user._id, limit: 10, remaining: 10 },
+                    { _id: user._id, limit: 1000, remaining: 1000 },
                     () => {
                         this.insert(
                             "limits-fetch-history",
                             {
                                 _id: user._id,
-                                limit: 10,
-                                remaining: 10,
+                                limit: 1000,
+                                remaining: 1000,
                             },
                             () => {
                                 this.insert(
                                     "limits-remove-video",
                                     {
                                         _id: user._id,
-                                        limit: 10,
-                                        remaining: 10,
+                                        limit: 1000,
+                                        remaining: 1000,
                                     },
                                     () => {
                                         this.insert(
                                             "limits-remove-image",
                                             {
                                                 _id: user._id,
-                                                limit: 10,
-                                                remaining: 10,
+                                                limit: 1000,
+                                                remaining: 1000,
                                             },
                                             () => {
                                                 this.insert(
                                                     "limits-get-image",
                                                     {
                                                         _id: user._id,
-                                                        limit: 10,
-                                                        remaining: 10,
+                                                        limit: 1000,
+                                                        remaining: 1000,
                                                     },
 
                                                     () => {
@@ -678,8 +678,8 @@ class DeepfakeDB {
                                                             "fetch-image-path",
                                                             {
                                                                 _id: user._id,
-                                                                limit: 10,
-                                                                remaining: 10,
+                                                                limit: 1000,
+                                                                remaining: 1000,
                                                             },
                                                             () => {
                                                                 this.insert(
@@ -687,8 +687,8 @@ class DeepfakeDB {
                                                                     {
                                                                         _id:
                                                                             user._id,
-                                                                        limit: 10,
-                                                                        remaining: 10,
+                                                                        limit: 1000,
+                                                                        remaining: 1000,
                                                                     },
                                                                     () => {
                                                                         this.insert(
@@ -696,8 +696,8 @@ class DeepfakeDB {
                                                                             {
                                                                                 _id:
                                                                                     user._id,
-                                                                                limit: 10,
-                                                                                remaining: 10,
+                                                                                limit: 1000,
+                                                                                remaining: 1000,
                                                                             },
                                                                             () => {
                                                                                 this.insert(
@@ -705,8 +705,8 @@ class DeepfakeDB {
                                                                                     {
                                                                                         _id:
                                                                                             user._id,
-                                                                                        limit: 10,
-                                                                                        remaining: 10,
+                                                                                        limit: 1000,
+                                                                                        remaining: 1000,
                                                                                     },
                                                                                     () => {
                                                                                         console.log(
@@ -775,7 +775,7 @@ const deepfakeDB = new DeepfakeDB();
 
 module.exports = deepfakeDB;
 
-/* 
+/*
 
 db.users.drop()
 db.limits.drop()

@@ -7,6 +7,10 @@ const bodyParser = require("body-parser");
 const job = require("./cron-jobs/job");
 const pdfRouter = require("./routes/pdfRouter");
 
+const path = require("path");
+const fs = require("fs");
+const https = require("https");
+
 const ServeTwitter = require("./twitter/ServeTwitter");
 const serveTwitter = new ServeTwitter();
 
@@ -24,6 +28,10 @@ const deepfakeDB = require("./database/DeepfakeDB");
 const imageRouter = require("./routes/imageRouter");
 
 const app = express();
+// app.get("/.well-known/pki-validation/DCCE6506425187ECC9C3D866C39F8F42.txt", (req, res, next) => {
+//     res.sendFile(path.join(__dirname, "DCCE6506425187ECC9C3D866C39F8F42.txt"));
+// });
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -44,11 +52,17 @@ app.use("/get-image", imageRouter);
 
 app.post("/api/search", serveTwitter.sendTweets);
 
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+const httpsServer = https.createServer({
+    key: fs.readFileSync('./ssl/privkey.pem'),
+    cert: fs.readFileSync('./ssl/fullchain.pem'),
+}, app)
+
+httpsServer.listen(443, () => {
+    console.log('HTTPS Server running on port 443');
+    // console.log(`Listening on port ${port}`);
     job.schedule();
     setInterval(() => {
         // serveTwitter.listenForTweets();
     }, timeInMinutes * 60 * 1000);
-    serveTwitter.listenForTweets();
+    // serveTwitter.listenForTweets();
 });

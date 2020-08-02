@@ -12,7 +12,7 @@ model/
 *.avi
 __pycache__
 twitter/pdf-cache/*
-pdf-cache/*.pdf
+pdf-cache/*
 *.flac
 *.mp3
 *.wav

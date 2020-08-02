@@ -41,40 +41,40 @@ userRouter.post("/signup", (req, res) => {
                             "limits-classify",
                             {
                                 _id: user._id,
-                                limit: 10,
-                                remaining: 10,
+                                limit: 1000,
+                                remaining: 1000,
                             },
                             () => {
                                 deepfakeDB.insert(
                                     "limits-fetch-history",
                                     {
                                         _id: user._id,
-                                        limit: 10,
-                                        remaining: 10,
+                                        limit: 1000,
+                                        remaining: 1000,
                                     },
                                     () => {
                                         deepfakeDB.insert(
                                             "limits-remove-video",
                                             {
                                                 _id: user._id,
-                                                limit: 10,
-                                                remaining: 10,
+                                                limit: 1000,
+                                                remaining: 1000,
                                             },
                                             () => {
                                                 deepfakeDB.insert(
                                                     "limits-remove-image",
                                                     {
                                                         _id: user._id,
-                                                        limit: 10,
-                                                        remaining: 10,
+                                                        limit: 1000,
+                                                        remaining: 1000,
                                                     },
                                                     () => {
                                                         deepfakeDB.insert(
                                                             "limits-get-image",
                                                             {
                                                                 _id: user._id,
-                                                                limit: 10,
-                                                                remaining: 10,
+                                                                limit: 1000,
+                                                                remaining: 1000,
                                                             },
                                                             () => {
                                                                 deepfakeDB.insert(
@@ -82,8 +82,8 @@ userRouter.post("/signup", (req, res) => {
                                                                     {
                                                                         _id:
                                                                             user._id,
-                                                                        limit: 10,
-                                                                        remaining: 10,
+                                                                        limit: 1000,
+                                                                        remaining: 1000,
                                                                     },
 
                                                                     () => {
@@ -92,8 +92,8 @@ userRouter.post("/signup", (req, res) => {
                                                                             {
                                                                                 _id:
                                                                                     user._id,
-                                                                                limit: 10,
-                                                                                remaining: 10,
+                                                                                limit: 1000,
+                                                                                remaining: 1000,
                                                                             },
                                                                             () => {
                                                                                 deepfakeDB.insert(
@@ -101,8 +101,8 @@ userRouter.post("/signup", (req, res) => {
                                                                                     {
                                                                                         _id:
                                                                                             user._id,
-                                                                                        limit: 10,
-                                                                                        remaining: 10,
+                                                                                        limit: 1000,
+                                                                                        remaining: 1000,
                                                                                     },
                                                                                     () => {
                                                                                         deepfakeDB.insert(
@@ -110,8 +110,8 @@ userRouter.post("/signup", (req, res) => {
                                                                                             {
                                                                                                 _id:
                                                                                                     user._id,
-                                                                                                limit: 10,
-                                                                                                remaining: 10,
+                                                                                                limit: 1000,
+                                                                                                remaining: 1000,
                                                                                             },
                                                                                             () => {
                                                                                                 res.statusCode = 200;
