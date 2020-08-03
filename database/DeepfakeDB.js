@@ -285,6 +285,11 @@ class DeepfakeDB {
             });
     }
 
+    findComplain(complainId, callback) {
+        console.log(complainId)
+        return Complain.findById(complainId).exec();
+    }
+
     insertUserComplain(userId, data, callback) {
         User.findOne({ _id: userId })
             .exec()
@@ -797,13 +802,14 @@ const deepfakeDB = new DeepfakeDB();
 
 module.exports = deepfakeDB;
 
-/* 
+/*
 
 db.users.drop()
 db.limits.drop()
 db.videos.drop()
 db.tweets.drop()
 db.images.drop()
+db.complain.drop()
 
 db.users.find({}).pretty()
 db.limits.find({}).pretty()

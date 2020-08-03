@@ -10,7 +10,7 @@ def comment(id, status, confidence, timestamp, auth):
     auth = OAuth1(auth["consumerKey"], auth["consumerSecret"],
                   auth["oauthToken"], auth["tokenSecret"])
     params = {
-        'status': "Testing Api 008\n" + "The video is " + status + "\nConfidence = "+confidence+"\nTimestamps = " + str(timestamp),
+        'status': "The video is " + status + "\nConfidence = "+confidence+"\n,
         'in_reply_to_status_id': id,
         'auto_populate_reply_metadata': 'true'
     }

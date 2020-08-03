@@ -89,7 +89,6 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
                         let bitrate = 0;
                         let fileSize = 0;
 
-<<<<<<< HEAD
                         ffmpeg.ffprobe(
                             path.join("video-cache", fileName),
                             (err, metadata) => {
@@ -134,8 +133,8 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
                                             } else if (
                                                 stream.nb_frames >
                                                 60 *
-                                                    MaxPlaybackTimeInMins *
-                                                    MaxFPSAllowed
+                                                MaxPlaybackTimeInMins *
+                                                MaxFPSAllowed
                                             ) {
                                                 res.statusCode = 413;
                                                 res.setHesCode = 413;
@@ -148,9 +147,9 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
                                                     message:
                                                         `Total frames in video should not exceed ` +
                                                         `${
-                                                            60 *
-                                                            MaxPlaybackTimeInMins *
-                                                            MaxFPSAllowed
+                                                        60 *
+                                                        MaxPlaybackTimeInMins *
+                                                        MaxFPSAllowed
                                                         } minutes`,
                                                 });
                                                 errFlag = true;
@@ -208,12 +207,13 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
                                                             deepfakeDB.insert(
                                                                 "complains",
                                                                 {
+                                                                    caseId: req.body.caseId,
                                                                     officername:
                                                                         req.body
-                                                                            .offName,
+                                                                            .officerName,
                                                                     officerId:
                                                                         req.body
-                                                                            .offId,
+                                                                            .officerId,
                                                                     station:
                                                                         req.body
                                                                             .station,
@@ -271,195 +271,89 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
                                                                             console.log(
                                                                                 user
                                                                             );
+                                                                            console.log(
+                                                                                req.body
+                                                                            );
+                                                                            classify(
+                                                                                req
+                                                                                    .file
+                                                                                    .path
+                                                                            )
+                                                                                .then(
+                                                                                    (
+                                                                                        result
+                                                                                    ) => {
+                                                                                        console.log(
+                                                                                            result
+                                                                                        );
+                                                                                        let data = {
+                                                                                            fileName: actualFileName,
+                                                                                            filePath: path.join(
+                                                                                                "video-results",
+                                                                                                "video",
+                                                                                                fileName
+                                                                                            ),
+                                                                                            videoExists: exist,
+                                                                                            timeToProcess:
+                                                                                                result.time_to_process,
+                                                                                            confidence:
+                                                                                                result.confidence,
+                                                                                            realToFakeRatio:
+                                                                                                result.real_percent /
+                                                                                                result.fake_percent,
+                                                                                            status:
+                                                                                                result.majority,
+                                                                                            fileChecksum: checksum,
+                                                                                            duration: duration,
+                                                                                            bitrate: bitrate,
+                                                                                            fileSize:
+                                                                                                fileSize.size,
+                                                                                        };
+                                                                                        deepfakeDB.insert(
+                                                                                            "videos",
+                                                                                            data,
+                                                                                            (
+                                                                                                video
+                                                                                            ) => {
+                                                                                                let dd = {
+                                                                                                    _id:
+                                                                                                        video._id,
+                                                                                                    feedback:
+                                                                                                        "",
+                                                                                                    tweetId:
+                                                                                                        "",
+                                                                                                };
+
+                                                                                                deepfakeDB.insertUserVideo(
+                                                                                                    req
+                                                                                                        .body
+                                                                                                        .userId,
+                                                                                                    dd,
+                                                                                                    (
+                                                                                                        user
+                                                                                                    ) => {
+                                                                                                        console.log(
+                                                                                                            "vid inserted in db "
+                                                                                                        );
+                                                                                                        console.log(
+                                                                                                            user
+                                                                                                        );
+                                                                                                    }
+                                                                                                );
+                                                                                            }
+                                                                                        );
+                                                                                    }
+                                                                                )
+                                                                                .catch(
+                                                                                    (
+                                                                                        err
+                                                                                    ) =>
+                                                                                        console.log(
+                                                                                            err.message
+                                                                                        )
+                                                                                );
                                                                         }
                                                                     );
-                                                                    () => {
-                                                                        console.log(
-                                                                            req.body
-                                                                        );
-                                                                        classify(
-                                                                            req
-                                                                                .file
-                                                                                .path
-                                                                        )
-                                                                            .then(
-                                                                                (
-                                                                                    result
-                                                                                ) => {
-                                                                                    console.log(
-                                                                                        result
-                                                                                    );
-                                                                                    let data = {
-                                                                                        fileName: actualFileName,
-                                                                                        filePath: path.join(
-                                                                                            "video-results",
-                                                                                            "video",
-                                                                                            fileName
-                                                                                        ),
-                                                                                        videoExists: exist,
-                                                                                        timeToProcess:
-                                                                                            result.time_to_process,
-                                                                                        confidence:
-                                                                                            result.confidence,
-                                                                                        realToFakeRatio:
-                                                                                            result.real_percent /
-                                                                                            result.fake_percent,
-                                                                                        status:
-                                                                                            result.majority,
-                                                                                        fileChecksum: checksum,
-                                                                                        duration: duration,
-                                                                                        bitrate: bitrate,
-                                                                                        fileSize:
-                                                                                            fileSize.size,
-                                                                                    };
-                                                                                    deepfakeDB.insert(
-                                                                                        "videos",
-                                                                                        data,
-                                                                                        (
-                                                                                            video
-                                                                                        ) => {
-                                                                                            let dd = {
-                                                                                                _id:
-                                                                                                    video._id,
-                                                                                                feedback:
-                                                                                                    "",
-                                                                                                tweetId:
-                                                                                                    "",
-                                                                                            };
-=======
-						ffmpeg.ffprobe(
-							path.join("video-cache", fileName),
-							(err, metadata) => {
-								if (err)
-									// Errors related to ffprobe will be handled here
-									console.log("FFProbe Related Error")
-								else {
-									let streamFlag = false;
-									for (let i = 0; i < metadata.streams.length; i++) {
-										let stream = metadata.streams[i];
-										if (stream.codec_type === "video") {
-											exist = true;
-											duration = stream.duration;
-											bitrate = stream.nb_frames;
-											fileSize = fs.statSync(
-												path.join("video-cache", fileName)
-											);
-											console.log(fileSize.size + " bytes");
-											if (stream.duration > 60 * MaxPlaybackTimeInMins) {
-												res.statusCode = 413;
-												res.setHeader("Content-Type", "application/json");
-												res.send({
-													code: 413,
-													message: `Video length should not exceed ${MaxPlaybackTimeInMins} minutes`,
-												});
-												errFlag = true;
-											} else if (
-												stream.nb_frames >
-												60 * MaxPlaybackTimeInMins * MaxFPSAllowed
-											) {
-												res.statusCode = 413;
-												res.setHesCode = 413;
-												res.setHeader("Content-Type", "application/json");
-												res.send({
-													code: 413,
-													message:
-														`Total frames in video should not exceed ` +
-														`${
-														60 * MaxPlaybackTimeInMins * MaxFPSAllowed
-														} minutes`,
-												});
-												errFlag = true;
-											}
-											streamFlag = true;
-											break;
-										}
-									}
-									if (!streamFlag) {
-										res.statusCode = 422;
-										res.setHeader("Content-Type", "application/json");
-										res.send({
-											code: 422,
-											message: `No video codec found`,
-										});
-										errFlag = true;
-									}
-									if (!errFlag) {
-										// All Error Handled up till here
-										deepfakeDB.findLimitClassify(req.body.userId, (rate) => {
-											if (rate.remaining <= 0) {
-												res.statusCode = 429;
-												res.setHeader("Content-Type", "application/json");
-												res.send({
-													code: 429,
-													message: "Rate limit exceeded",
-												});
-											} else {
-												deepfakeDB.decClassifyRemaining(req.body.userId, () => {
-													console.log("decrement done");
-													res.statusCode = 200;
-													res.setHeader("Content-Type", "application/json");
-													res.send({
-														code: 200,
-														message: "Video is being processed ",
-													});
-													classify(req.file.path)
-														.then((result) => {
-															console.log(result);
-															let data = {
-																fileName: actualFileName,
-																filePath: path.join(
-																	"video-results",
-																	"video",
-																	fileName
-																),
-																videoExists: exist,
-																timeToProcess: result.time_to_process,
-																confidence: result.confidence,
-																realToFakeRatio:
-																	result.real_percent / result.fake_percent,
-																status: result.majority,
-																fileChecksum: checksum,
-																duration: duration,
-																bitrate: bitrate,
-																fileSize: fileSize.size,
-															};
-															deepfakeDB.insert("videos", data, (video) => {
-																let dd = {
-																	_id: video._id,
-																	feedback: "",
-																	tweetId: "",
-																};
->>>>>>> 15a8d586f06d6f64772ce0b13ea5b623aa679f04
-
-                                                                                            deepfakeDB.insertUserVideo(
-                                                                                                req
-                                                                                                    .body
-                                                                                                    .userId,
-                                                                                                dd,
-                                                                                                (
-                                                                                                    user
-                                                                                                ) => {
-                                                                                                    console.log(
-                                                                                                        "vid inserted in db "
-                                                                                                    );
-                                                                                                    console.log(
-                                                                                                        user
-                                                                                                    );
-                                                                                                }
-                                                                                            );
-                                                                                        }
-                                                                                    );
-                                                                                }
-                                                                            )
-                                                                            .catch(
-                                                                                (
-                                                                                    err
-                                                                                ) =>
-                                                                                    console.log(
-                                                                                        err.message
-                                                                                    )
-                                                                            );
-                                                                    };
                                                                 }
                                                             );
                                                         }

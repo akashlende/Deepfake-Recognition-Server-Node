@@ -23,6 +23,7 @@ fetchHistory.post("/", authenticate.verifyUser, (req, res, next) => {
 
                     let vdata = [];
                     let idata = [];
+                    let cdata = [];
 
                     for (let i = 0; i < user.videos.length; i++) {
                         let video = user.videos[i];
@@ -38,6 +39,17 @@ fetchHistory.post("/", authenticate.verifyUser, (req, res, next) => {
                             idata.push(value);
                         });
                     }
+
+                    for (let i = 0; i < user.complains.length; i++) {
+                        let complain = user.complains[i];
+
+                        deepfakeDB.findComplain(complain._id).then((value) => {
+                            console.log("------------>", cdata, value)
+
+                            cdata.push(value);
+                        });
+                    }
+
                     deepfakeDB.decFetchRemaining(rate._id, () => {
                         res.setHeader("Content-Type", "application/json");
                         res.send({
@@ -46,6 +58,7 @@ fetchHistory.post("/", authenticate.verifyUser, (req, res, next) => {
                             data,
                             vdata,
                             idata,
+                            cdata
                         });
                     });
                 } else {

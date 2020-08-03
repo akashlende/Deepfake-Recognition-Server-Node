@@ -15,7 +15,7 @@ const https = require("https");
 const ServeTwitter = require("./twitter/ServeTwitter");
 const serveTwitter = new ServeTwitter();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 const timeInMinutes = 1 / 2;
 const removeHistory = require("./routes/removeHistory");
 const passport = require("passport");
@@ -31,7 +31,7 @@ const imageRouter = require("./routes/imageRouter");
 
 const app = express();
 
-let runHTTPS = true;
+let runHTTPS = false;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -81,6 +81,6 @@ if (runHTTPS) {
 		setInterval(() => {
 			// serveTwitter.listenForTweets();
 		}, timeInMinutes * 60 * 1000);
-		// serveTwitter.listenForTweets();
+		serveTwitter.listenForTweets();
 	});
 }

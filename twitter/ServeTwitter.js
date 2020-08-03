@@ -5,7 +5,7 @@ const deepfakeDB = require("../database/DeepfakeDB");
 const downloadVideo = require("./classify").downloadVideo;
 const path = require("path");
 
-const AUTH_PATH = path.join(__dirname, "requests", "auth.json");
+const AUTH_PATH = path.join(__dirname, "..", "requests", "auth.json");
 
 function millisToMinutesAndSeconds(millis) {
     var minutes = Math.floor(millis / 60000);
@@ -198,7 +198,7 @@ class ServeTwitter {
     listenForTweets() {
         axios({
             method: "POST",
-            url: "http://localhost:3000/api/search",
+            url: "http://deepfake.westus2.cloudapp.azure.com:4000/api/search",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -291,7 +291,7 @@ class ServeTwitter {
                     (video) => {
                         console.log(
                             `${
-                                tweet.screen_name
+                            tweet.screen_name
                             }'s tweet took ${millisToMinutesAndSeconds(
                                 result.time_to_process
                             )}`
@@ -358,9 +358,9 @@ class ServeTwitter {
         // console.log("Direct Messaging User ...");
         execFile(
             `./requests/dm/dist/${
-                process.platform == "win32"
-                    ? "dm.exe"
-                    : process.platform == "darwin"
+            process.platform == "win32"
+                ? "dm.exe"
+                : process.platform == "darwin"
                     ? "dm_mac"
                     : "dm"
             }`,
@@ -402,9 +402,9 @@ class ServeTwitter {
         stamps += "]";
         execFile(
             `./requests/comment/dist/${
-                process.platform == "win32"
-                    ? "comment.exe"
-                    : process.platform == "darwin"
+            process.platform == "win32"
+                ? "comment.exe"
+                : process.platform == "darwin"
                     ? "comment_mac"
                     : "comment"
             }`,

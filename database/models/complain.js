@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const ComplainSchema = new Schema({
+    caseId: {
+        type: String,
+        required: false,
+    },
     officername: {
         type: String,
         required: false,
