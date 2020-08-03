@@ -42,7 +42,7 @@ const classify = (filePath) => {
 							--models final_111_DeepFakeClassifier_tf_efficientnet_b7_ns_0_36 \
 							--frames ${frameCount}`
 							)
-								.then((value) => {
+								.then(() => {
 									const parser = csv({ delimiter: "," }, (err, data) => {
 										fake_confidence = parseFloat(data[1][1]);
 										real_confidence = 1.0 - fake_confidence;
