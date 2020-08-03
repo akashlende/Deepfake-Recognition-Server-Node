@@ -24,10 +24,10 @@ const options = {
               right: 30px;
               "
           />
-          <div style="float: left; font-size: 18px;">
+          <div style="float: left; font-size: 8px;">
               SMART INDIA HACKATHON 2020
           </div>
-          <div style="float: right; font-size: 18px;">
+          <div style="float: right; font-size: 8px;">
               THE SENTINELS | MES COLLEGE OF ENGINEERING, PUNE
           </div>
           `,

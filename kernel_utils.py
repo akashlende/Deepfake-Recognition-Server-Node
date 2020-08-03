@@ -435,7 +435,7 @@ def predict_on_video(face_extractor, video_path, batch_size, input_size, models,
                 subprocess.call(
                     ['rm', f'{file_name}.mp3'])
 
-                subprocess.call(['rm', f'{video_result_path1}'])
+                # subprocess.call(['rm', f'{video_result_path1}'])
                 
 
                 return np.mean(strategy(faces_pred))
