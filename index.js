@@ -9,6 +9,7 @@ const pdfRouter = require("./routes/pdfRouter");
 
 const path = require("path");
 const fs = require("fs");
+const { execSync } = require("child_process")
 const https = require("https");
 
 const ServeTwitter = require("./twitter/ServeTwitter");
@@ -63,6 +64,7 @@ if (runHTTPS) {
 	);
 
 	httpsServer.listen(443, () => {
+		execSync('rm -f video-cache/temp/*.mp4')
 		console.log("HTTPS Server running on port 443");
 		// console.log(`Listening on port ${port}`);
 		job.schedule();

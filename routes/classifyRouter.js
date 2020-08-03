@@ -94,7 +94,7 @@ classifyRouter.post("/", authenticate.verifyUser, (req, res, next) => {
 							(err, metadata) => {
 								if (err)
 									// Errors related to ffprobe will be handled here
-									console.log(err);
+									console.log("FFProbe Related Error")
 								else {
 									let streamFlag = false;
 									for (let i = 0; i < metadata.streams.length; i++) {

@@ -27,7 +27,7 @@ const classify = (filePath) => {
 			(err, metadata) => {
 				if (err)
 					// Errors related to ffprobe will be handled here
-					console.log(err);
+					console.log("FFProbe Related Error");
 				else {
 					for (let i = 0; i < metadata.streams.length; i++) {
 						let stream = metadata.streams[i];
@@ -36,11 +36,11 @@ const classify = (filePath) => {
 							console.log(frameCount)
 							exec(
 								`python -W ignore predict_folder.py \
-							--weights-dir weights/ \
-							--test-dir ./video-cache/temp \
-							--output result.csv \
-							--models final_111_DeepFakeClassifier_tf_efficientnet_b7_ns_0_36 \
-							--frames ${frameCount}`
+								--weights-dir weights/ \
+								--test-dir ./video-cache/temp \
+								--output result.csv \
+								--models final_111_DeepFakeClassifier_tf_efficientnet_b7_ns_0_36 \
+								--frames ${frameCount}`
 							)
 								.then(() => {
 									const parser = csv({ delimiter: "," }, (err, data) => {
