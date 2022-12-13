@@ -18,7 +18,7 @@
         "csv-parse": "^4.11.1",
         "download": "^8.0.0",
         "exec": "^0.2.1",
-        "express": "^4.17.1",
+        "express": "^4.17.3",
         "fetch": "^1.1.0",
         "ffmpeg-extract-audio": "^1.0.2",
         "ffmpeg-extract-frames": "^2.0.2",
